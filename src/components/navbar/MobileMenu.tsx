@@ -3,34 +3,49 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiChevronDown, FiX } from "react-icons/fi";
 
-const demoCategories = [
-  "General Surgical Instruments",
-  "Medical Disposables",
-  "Orthopedic Implants",
-  "Hospital Furniture",
-  "ICU Equipment",
-  "Diagnostic Equipment",
-  "Dental Equipment",
-  "Laboratory Products",
-  "Emergency Products",
-  "Rehabilitation Products",
-  "OT Equipment",
-  "Patient Monitor",
-  "Radiology Equipment",
-  "Sterilization Products",
-  "Blood Collection",
-  "Physiotherapy Equipment",
+// TODO: Replace with backend API response.
+// Expected API shape: { name: string, slug: string }[]
+interface Category {
+  name: string;
+  slug: string;
+}
+
+const demoCategories: Category[] = [
+  {
+    name: "General Surgical Instruments",
+    slug: "general-surgical-instruments",
+  },
+  { name: "Medical Disposables", slug: "medical-disposables" },
+  { name: "Orthopedic Implants", slug: "orthopedic-implants" },
+  { name: "Hospital Furniture", slug: "hospital-furniture" },
+  { name: "ICU Equipment", slug: "icu-equipment" },
+  { name: "Diagnostic Equipment", slug: "diagnostic-equipment" },
+  { name: "Dental Equipment", slug: "dental-equipment" },
+  { name: "Laboratory Products", slug: "laboratory-products" },
+  { name: "Emergency Products", slug: "emergency-products" },
+  { name: "Rehabilitation Products", slug: "rehabilitation-products" },
+  { name: "OT Equipment", slug: "ot-equipment" },
+  { name: "Patient Monitor", slug: "patient-monitor" },
+  { name: "Radiology Equipment", slug: "radiology-equipment" },
+  { name: "Sterilization Products", slug: "sterilization-products" },
+  { name: "Blood Collection", slug: "blood-collection" },
+  { name: "Physiotherapy Equipment", slug: "physiotherapy-equipment" },
 ];
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  categories?: Category[];
 }
 
-const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
+const MobileMenu = ({
+  isOpen,
+  onClose,
+  categories = demoCategories,
+}: MobileMenuProps) => {
   const pathname = usePathname();
   const [productsOpen, setProductsOpen] = useState(false);
 
@@ -39,6 +54,19 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
   ];
+
+  // Reset the Products submenu and unlock body scroll whenever the drawer closes.
+  useEffect(() => {
+    if (!isOpen) {
+      setProductsOpen(false);
+      document.body.style.overflow = "";
+    } else {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
@@ -64,6 +92,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
               <button
                 onClick={onClose}
                 className="p-2 rounded-full hover:bg-slate-100 transition-colors"
+                aria-label="Close menu"
               >
                 <FiX className="w-6 h-6 text-slate-700" />
               </button>
@@ -74,6 +103,7 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                 <button
                   onClick={() => setProductsOpen(!productsOpen)}
                   className="flex items-center justify-between w-full px-4 py-3 text-left text-base font-medium text-slate-700 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                  aria-expanded={productsOpen}
                 >
                   <span>Products</span>
                   <FiChevronDown
@@ -92,14 +122,14 @@ const MobileMenu = ({ isOpen, onClose }: MobileMenuProps) => {
                       className="overflow-hidden pl-4"
                     >
                       <div className="py-2 space-y-1 border-l-2 border-blue-700/20 pl-3">
-                        {demoCategories.map((cat) => (
+                        {categories.map((cat) => (
                           <Link
-                            key={cat}
-                            href={`/products/${cat.toLowerCase().replace(/\s+/g, "-")}`}
+                            key={cat.slug}
+                            href={`/products/category/${cat.slug}`}
                             className="block px-3 py-2 text-sm text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
                             onClick={onClose}
                           >
-                            {cat}
+                            {cat.name}
                           </Link>
                         ))}
                       </div>
