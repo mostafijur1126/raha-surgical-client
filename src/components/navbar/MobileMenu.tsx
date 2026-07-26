@@ -5,9 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FiChevronDown, FiX } from "react-icons/fi";
+import { useTheme } from "next-themes";
 
-// TODO: Replace with backend API response.
-// Expected API shape: { name: string, slug: string }[]
 interface Category {
   name: string;
   slug: string;
@@ -46,6 +45,8 @@ const MobileMenu = ({
   onClose,
   categories = demoCategories,
 }: MobileMenuProps) => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const pathname = usePathname();
   const [productsOpen, setProductsOpen] = useState(false);
 
@@ -55,7 +56,14 @@ const MobileMenu = ({
     { label: "Contact", href: "/contact" },
   ];
 
-  // Reset the Products submenu and unlock body scroll whenever the drawer closes.
+  const bg = isDark ? "#1E293B" : "#FFFFFF";
+  const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
+  const textSecondary = isDark ? "#94A3B8" : "#475569";
+  const hoverBg = isDark ? "#2D3748" : "#EFF6FF";
+  const hoverText = isDark ? "#60A5FA" : "#025395";
+  const borderColor = isDark ? "#334155" : "#E2E8F0";
+  const overlayBg = isDark ? "rgba(15,23,42,0.8)" : "rgba(0,0,0,0.5)";
+
   useEffect(() => {
     if (!isOpen) {
       setProductsOpen(false);
@@ -77,7 +85,8 @@ const MobileMenu = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-black/50 z-40"
+            className="fixed inset-0 z-40"
+            style={{ backgroundColor: overlayBg }}
             onClick={onClose}
           />
 
@@ -86,15 +95,23 @@ const MobileMenu = ({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "tween", duration: 0.3, ease: "easeInOut" }}
-            className="fixed top-0 right-0 w-full max-w-sm h-full bg-white z-50 shadow-xl p-6 overflow-y-auto"
+            className="fixed top-0 right-0 w-full max-w-sm h-full z-50 shadow-xl p-6 overflow-y-auto"
+            style={{ backgroundColor: bg }}
           >
             <div className="flex justify-end">
               <button
                 onClick={onClose}
-                className="p-2 rounded-full hover:bg-slate-100 transition-colors"
+                className="p-2 rounded-full transition-colors"
+                style={{ color: textSecondary }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = hoverBg)
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "transparent")
+                }
                 aria-label="Close menu"
               >
-                <FiX className="w-6 h-6 text-slate-700" />
+                <FiX className="w-6 h-6" />
               </button>
             </div>
 
@@ -102,7 +119,18 @@ const MobileMenu = ({
               <div>
                 <button
                   onClick={() => setProductsOpen(!productsOpen)}
-                  className="flex items-center justify-between w-full px-4 py-3 text-left text-base font-medium text-slate-700 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                  className="flex items-center justify-between w-full px-4 py-3 text-left text-base font-medium rounded-lg transition-colors"
+                  style={{
+                    color: textSecondary,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = hoverText;
+                    e.currentTarget.style.backgroundColor = hoverBg;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = textSecondary;
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
                   aria-expanded={productsOpen}
                 >
                   <span>Products</span>
@@ -121,12 +149,27 @@ const MobileMenu = ({
                       transition={{ duration: 0.3 }}
                       className="overflow-hidden pl-4"
                     >
-                      <div className="py-2 space-y-1 border-l-2 border-blue-700/20 pl-3">
+                      <div
+                        className="py-2 space-y-1 pl-3"
+                        style={{
+                          borderLeft: `2px solid ${isDark ? "#3B82F6" : "#025395"}20`,
+                        }}
+                      >
                         {categories.map((cat) => (
                           <Link
                             key={cat.slug}
                             href={`/products/category/${cat.slug}`}
-                            className="block px-3 py-2 text-sm text-slate-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+                            className="block px-3 py-2 text-sm rounded-md transition-colors"
+                            style={{ color: textSecondary }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = hoverText;
+                              e.currentTarget.style.backgroundColor = hoverBg;
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = textSecondary;
+                              e.currentTarget.style.backgroundColor =
+                                "transparent";
+                            }}
                             onClick={onClose}
                           >
                             {cat.name}
@@ -144,11 +187,23 @@ const MobileMenu = ({
                   <Link
                     key={link.label}
                     href={link.href}
-                    className={`block px-4 py-3 text-base font-medium rounded-lg transition-colors ${
-                      isActive
-                        ? "text-blue-700 bg-blue-50"
-                        : "text-slate-700 hover:text-blue-700 hover:bg-blue-50"
-                    }`}
+                    className="block px-4 py-3 text-base font-medium rounded-lg transition-colors"
+                    style={{
+                      color: isActive ? hoverText : textSecondary,
+                      backgroundColor: isActive ? hoverBg : "transparent",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.color = hoverText;
+                        e.currentTarget.style.backgroundColor = hoverBg;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.color = textSecondary;
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }
+                    }}
                     onClick={onClose}
                   >
                     {link.label}

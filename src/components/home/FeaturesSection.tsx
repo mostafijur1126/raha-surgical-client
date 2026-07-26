@@ -1,6 +1,12 @@
+"use client";
+
+import { useTheme } from "next-themes";
 import { FaShieldAlt, FaTruck, FaHeadset } from "react-icons/fa";
 
 const FeaturesSection = () => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
   const features = [
     {
       id: 1,
@@ -25,19 +31,42 @@ const FeaturesSection = () => {
     },
   ];
 
+  // Theme-aware colors
+  const bgColor = isDark ? "#0F172A" : "#f0f2ff";
+  const cardBg = isDark ? "#1E293B" : "#FFFFFF";
+  const cardBorder = isDark ? "#334155" : "#E8EEF5";
+  const cardHoverBorder = isDark ? "#60A5FA" : "#025395";
+  const headingColor = isDark ? "#F1F5F9" : "#065798";
+  const textColor = isDark ? "#94A3B8" : "#475569";
+  const iconBg = isDark ? "rgba(96,165,250,0.15)" : "rgba(2,83,149,0.08)";
+  const iconColor = isDark ? "#60A5FA" : "#025395";
+  const iconHoverBg = isDark ? "rgba(96,165,250,0.25)" : "rgba(2,83,149,0.15)";
+  const cardTitle = isDark ? "#F1F5F9" : "#0F172A";
+  const cardDesc = isDark ? "#94A3B8" : "#475569";
+  const decorativeLine = isDark ? "rgba(96,165,250,0.3)" : "rgba(2,83,149,0.3)";
+  const glowBg = isDark
+    ? "from-blue-600/10 to-transparent"
+    : "from-blue-600/5 to-transparent";
+
   return (
-    <section className="py-16 md:py-24 bg-slate-900">
+    <section
+      className="py-16 md:py-24 transition-colors duration-300"
+      style={{ backgroundColor: bgColor }}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <span className="inline-block px-4 py-1.5 text-xs font-semibold tracking-wider uppercase text-blue-400 bg-blue-700/20 rounded-full mb-4">
-            Why Choose Us
-          </span>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
+          <h2
+            className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
+            style={{ color: headingColor }}
+          >
             Why Surgical Professionals <br className="hidden sm:block" />
-            Choose <span className="text-blue-400">Raha Surgical</span>
+            Choose <span style={{ color: iconColor }}>RAHA Surgical</span>
           </h2>
-          <p className="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto">
+          <p
+            className="text-base sm:text-lg max-w-2xl mx-auto"
+            style={{ color: textColor }}
+          >
             We bridge the gap between manufacturing precision and clinical
             urgency.
           </p>
@@ -50,24 +79,58 @@ const FeaturesSection = () => {
             return (
               <div
                 key={feature.id}
-                className="group relative bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-blue-400/40 transition-all duration-300 hover:bg-white/10"
+                className="group relative rounded-2xl p-8 border transition-all duration-300"
+                style={{
+                  backgroundColor: cardBg,
+                  borderColor: cardBorder,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = cardHoverBorder;
+                  e.currentTarget.style.boxShadow = isDark
+                    ? "0 10px 30px -10px rgba(0,0,0,0.4)"
+                    : "0 10px 30px -10px rgba(2,83,149,0.15)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = cardBorder;
+                  e.currentTarget.style.boxShadow = "none";
+                }}
               >
                 {/* Subtle background glow on hover */}
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div
+                  className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${glowBg} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}
+                />
 
                 <div className="relative z-10">
                   {/* Icon */}
-                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-700/20 text-blue-400 mb-5 group-hover:bg-blue-700/30 group-hover:scale-105 transition-all duration-300">
+                  <div
+                    className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5 transition-all duration-300 group-hover:scale-105"
+                    style={{
+                      backgroundColor: iconBg,
+                      color: iconColor,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = iconHoverBg;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = iconBg;
+                    }}
+                  >
                     <Icon className="w-7 h-7" />
                   </div>
 
                   {/* Title */}
-                  <h3 className="text-xl font-bold text-white mb-3 tracking-tight">
+                  <h3
+                    className="text-xl font-bold mb-3 tracking-tight"
+                    style={{ color: cardTitle }}
+                  >
                     {feature.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-slate-300 leading-relaxed text-sm md:text-base">
+                  <p
+                    className="leading-relaxed text-sm md:text-base"
+                    style={{ color: cardDesc }}
+                  >
                     {feature.description}
                   </p>
                 </div>
@@ -78,7 +141,10 @@ const FeaturesSection = () => {
 
         {/* Bottom Decorative Line */}
         <div className="mt-16 flex justify-center">
-          <div className="w-24 h-1 bg-blue-700/50 rounded-full" />
+          <div
+            className="w-24 h-1 rounded-full"
+            style={{ backgroundColor: decorativeLine }}
+          />
         </div>
       </div>
     </section>

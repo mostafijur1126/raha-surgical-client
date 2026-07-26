@@ -1,11 +1,9 @@
 "use client";
 
-import { on } from "events";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 
-// TODO: Replace this demo category array with backend API response.
-// Expected API shape: { name: string, slug: string }[]
 interface Category {
   name: string;
   slug: string;
@@ -44,6 +42,15 @@ const MegaMenu = ({
   categories = demoCategories,
   onClose,
 }: MegaMenuProps) => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
+  const bgColor = isDark ? "#1E293B" : "#FFFFFF";
+  const borderColor = isDark ? "#334155" : "#E2E8F0";
+  const textColor = isDark ? "#E2E8F0" : "#334155";
+  const hoverBg = isDark ? "#2D3748" : "#EFF6FF";
+  const hoverText = isDark ? "#60A5FA" : "#025395";
+
   const columns = 4;
   const chunkSize = Math.ceil(categories.length / columns);
   const columnData = Array.from({ length: columns }, (_, i) =>
@@ -58,11 +65,13 @@ const MegaMenu = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 8 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="absolute left-0 right-0 top-full mt-0 bg-white rounded-xl shadow-xl border border-slate-100 p-6"
+          className="absolute left-0 right-0 top-full mt-0 rounded-xl shadow-xl border p-6"
           style={{
             width: "100vw",
             maxWidth: "100%",
             transform: "translateX(-50%)",
+            backgroundColor: bgColor,
+            borderColor: borderColor,
           }}
         >
           <div className="container mx-auto px-4">
@@ -74,7 +83,16 @@ const MegaMenu = ({
                       key={category.slug}
                       href={`/products/category/${category.slug}`}
                       onClick={onClose}
-                      className="block px-2 py-1.5 text-sm text-slate-700 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors duration-150"
+                      className="block px-2 py-1.5 text-sm rounded-md transition-colors duration-150"
+                      style={{ color: textColor }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.color = hoverText;
+                        e.currentTarget.style.backgroundColor = hoverBg;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.color = textColor;
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
                     >
                       {category.name}
                     </Link>

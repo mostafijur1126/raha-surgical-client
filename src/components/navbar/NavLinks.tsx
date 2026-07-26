@@ -5,8 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FiChevronDown } from "react-icons/fi";
 import MegaMenu from "./MegaMenu";
+import { useTheme } from "next-themes";
 
 const NavLinks = () => {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
   const pathname = usePathname();
   const [isMegaOpen, setIsMegaOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -30,10 +33,15 @@ const NavLinks = () => {
 
   const links = [
     { label: "Home", href: "/" },
-    { label: "Products", href: "#", hasMega: true },
+    { label: "Products", href: "/products", hasMega: true },
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
   ];
+
+  const primary = isDark ? "#60A5FA" : "#025395";
+  const primaryLight = isDark ? "#1E3A5F" : "#EFF6FF";
+  const textDefault = isDark ? "#E2E8F0" : "#334155";
+  const textHover = isDark ? "#60A5FA" : "#025395";
 
   return (
     <div className="hidden lg:flex items-center gap-1 ml-6">
@@ -47,17 +55,30 @@ const NavLinks = () => {
               onMouseLeave={handleMouseLeave}
             >
               <button
-                className={`flex items-center gap-0.5 px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200 ${
-                  isActive
-                    ? "text-blue-700 bg-blue-50"
-                    : "text-slate-700 hover:text-blue-700 hover:bg-blue-50"
-                }`}
+                className="flex items-center gap-0.5 px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200"
+                style={{
+                  color: isActive ? primary : textDefault,
+                  backgroundColor: isActive ? primaryLight : "transparent",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.color = textHover;
+                    e.currentTarget.style.backgroundColor = primaryLight;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.color = textDefault;
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }
+                }}
               >
                 {link.label}
                 <FiChevronDown
                   className={`w-4 h-4 transition-transform duration-200 ${
                     isMegaOpen ? "rotate-180" : ""
                   }`}
+                  style={{ color: isActive ? primary : textDefault }}
                 />
               </button>
               <MegaMenu
@@ -71,11 +92,23 @@ const NavLinks = () => {
           <Link
             key={link.label}
             href={link.href}
-            className={`px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200 ${
-              isActive
-                ? "text-blue-700 bg-blue-50"
-                : "text-slate-700 hover:text-blue-700 hover:bg-blue-50"
-            }`}
+            className="px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200"
+            style={{
+              color: isActive ? primary : textDefault,
+              backgroundColor: isActive ? primaryLight : "transparent",
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.color = textHover;
+                e.currentTarget.style.backgroundColor = primaryLight;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.color = textDefault;
+                e.currentTarget.style.backgroundColor = "transparent";
+              }
+            }}
           >
             {link.label}
           </Link>
