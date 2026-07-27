@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { FaHeartbeat, FaEye, FaEyeSlash } from "react-icons/fa";
 import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 export default function AdminSignupPage() {
   const { theme } = useTheme();
@@ -15,6 +16,7 @@ export default function AdminSignupPage() {
   const [profilePhoto, setProfilePhoto] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     setMuted(true);
@@ -72,16 +74,15 @@ export default function AdminSignupPage() {
   }
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Signup attempt:", { fullName, profilePhoto, email, password });
-    // TODO: Implement admin signup logic
     const { data, error } = await authClient.signUp.email({
       name: fullName,
       email: email,
       password: password,
       image: profilePhoto,
-      callbackURL: "/",
     });
-    console.log(data, error);
+    if (data) {
+      router.push("/");
+    }
   };
 
   // Theme-aware colors

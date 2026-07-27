@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { FiChevronDown } from "react-icons/fi";
 import MegaMenu from "./MegaMenu";
 import { useTheme } from "next-themes";
+import { authClient } from "@/lib/auth-client";
+import { Baseline } from "lucide-react";
 
 const NavLinks = () => {
   const { theme } = useTheme();
@@ -13,6 +15,11 @@ const NavLinks = () => {
   const pathname = usePathname();
   const [isMegaOpen, setIsMegaOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const { data: session } = authClient.useSession();
+  const user = session?.user as
+    | (typeof session extends { user: infer U } ? U : never)
+    | undefined;
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -31,12 +38,17 @@ const NavLinks = () => {
     };
   }, []);
 
-  const links = [
+  const isAdmin = user?.role === "admin";
+
+  const baseLinks = [
     { label: "Home", href: "/" },
     { label: "Products", href: "/products", hasMega: true },
-    { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
   ];
+
+  const links = isAdmin
+    ? [...baseLinks, { label: "Dashboard", href: "/admin/dashboard" }]
+    : baseLinks;
 
   const primary = isDark ? "#60A5FA" : "#025395";
   const primaryLight = isDark ? "#1E3A5F" : "#EFF6FF";
