@@ -47,7 +47,7 @@ const NavLinks = () => {
   ];
 
   const links = isAdmin
-    ? [...baseLinks, { label: "Dashboard", href: "/admin/dashboard" }]
+    ? [...baseLinks, { label: "Dashboard", href: "/dashboard/admin" }]
     : baseLinks;
 
   const primary = isDark ? "#60A5FA" : "#025395";
