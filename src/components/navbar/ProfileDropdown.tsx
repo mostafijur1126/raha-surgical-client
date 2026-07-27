@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiUser, FiLogOut, FiUserCheck, FiChevronDown } from "react-icons/fi";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 
 const ProfileDropdown = () => {
   const { theme } = useTheme();
@@ -36,17 +37,21 @@ const ProfileDropdown = () => {
 
   if (!isLoggedIn) {
     return (
-      <button
-        onClick={() => console.log("Navigate to login")}
-        className="text-white rounded-full px-6 py-2 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200"
-        style={{ backgroundColor: primary }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.backgroundColor = primaryHover)
-        }
-        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = primary)}
-      >
-        Login / Register
-      </button>
+      <Link href={"/auth/signup"}>
+        <button
+          onClick={() => console.log("Navigate to login")}
+          className="text-white rounded-full px-6 py-2 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200"
+          style={{ backgroundColor: primary }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = primaryHover)
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = primary)
+          }
+        >
+          Login / Register
+        </button>
+      </Link>
     );
   }
 
