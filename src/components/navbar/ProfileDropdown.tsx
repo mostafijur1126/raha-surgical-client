@@ -5,13 +5,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FiUser, FiLogOut, FiUserCheck, FiChevronDown } from "react-icons/fi";
 import { useTheme } from "next-themes";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 const ProfileDropdown = () => {
   const { theme } = useTheme();
   const isDark = theme === "dark";
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const { data: session, isPending } = authClient.useSession();
+  const user = session?.user;
+  const isLoggedIn = !!user;
+  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -35,11 +41,14 @@ const ProfileDropdown = () => {
   const hoverBg = isDark ? "#2D3748" : "#F1F5F9";
   const destructive = isDark ? "#F87171" : "#DC2626";
 
+  if (isPending) {
+    return <div className="w-9 h-9" />;
+  }
+
   if (!isLoggedIn) {
     return (
       <Link href={"/auth/signup"}>
         <button
-          onClick={() => console.log("Navigate to login")}
           className="text-white rounded-full px-6 py-2 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200"
           style={{ backgroundColor: primary }}
           onMouseEnter={(e) =>
@@ -54,6 +63,17 @@ const ProfileDropdown = () => {
       </Link>
     );
   }
+
+  const handleLogout = async () => {
+    setIsOpen(false);
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/auth/signin");
+        },
+      },
+    });
+  };
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -88,29 +108,23 @@ const ProfileDropdown = () => {
               borderColor: border,
             }}
           >
+            {/* <Link href="/profile" onClick={() => setIsOpen(false)}>
+              <button
+                className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors"
+                style={{ color: text }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = hoverBg)
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "transparent")
+                }
+              >
+                <FiUserCheck className="w-4 h-4" />
+                My Profile
+              </button>
+            </Link> */}
             <button
-              onClick={() => {
-                setIsOpen(false);
-                console.log("Navigate to profile");
-              }}
-              className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors"
-              style={{ color: text }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = hoverBg)
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              <FiUserCheck className="w-4 h-4" />
-              My Profile
-            </button>
-            <button
-              onClick={() => {
-                setIsOpen(false);
-                setIsLoggedIn(false);
-                console.log("Logout");
-              }}
+              onClick={handleLogout}
               className="flex items-center gap-2 w-full px-4 py-2.5 text-sm transition-colors border-t"
               style={{
                 color: destructive,
