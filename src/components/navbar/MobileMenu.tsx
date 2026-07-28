@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FiChevronDown, FiX } from "react-icons/fi";
-import { useTheme } from "next-themes";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 interface Category {
   name: string;
@@ -45,8 +45,7 @@ const MobileMenu = ({
   onClose,
   categories = demoCategories,
 }: MobileMenuProps) => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
   const pathname = usePathname();
   const [productsOpen, setProductsOpen] = useState(false);
 

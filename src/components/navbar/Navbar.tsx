@@ -2,26 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { FiMenu } from "react-icons/fi";
-import { useTheme } from "next-themes";
 import Logo from "./Logo";
 import SearchBar from "./SearchBar";
 import NavLinks from "./NavLinks";
 import ProfileDropdown from "./ProfileDropdown";
 import MobileMenu from "./MobileMenu";
 import ThemeToggle from "../theme-toggle/ThemeToggle";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 const Navbar = () => {
-  const { theme, resolvedTheme } = useTheme();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  // Determine dark mode using resolvedTheme (avoids hydration mismatch)
-  const isDark = resolvedTheme === "dark";
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { isDark } = useMountedTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,16 +24,11 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Compute background color based on theme and scroll state
   const getBgColor = () => {
-    if (!mounted) return isDark ? "#0F172A" : "#FFFFFF";
-
     if (isScrolled) {
       return isDark ? "#0F172A" : "#FFFFFF";
-    } else {
-      // Use valid rgba values – no invalid CSS like #0F172A/95
-      return isDark ? "rgba(15, 23, 42, 0.95)" : "rgba(255, 255, 255, 0.95)";
     }
+    return isDark ? "rgba(15, 23, 42, 0.95)" : "rgba(255, 255, 255, 0.95)";
   };
 
   const borderColor = isDark ? "#334155" : "#E2E8F0";
@@ -48,13 +36,11 @@ const Navbar = () => {
     ? "0 4px 6px -1px rgba(0,0,0,0.3)"
     : "0 4px 6px -1px rgba(0,0,0,0.1)";
 
-  // Force re-render when theme changes by using a key
   const bgColor = getBgColor();
 
   return (
     <>
       <header
-        key={theme} // Forces re-render on theme change
         className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm transition-all duration-300 border-b"
         style={{
           backgroundColor: bgColor,

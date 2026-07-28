@@ -2,15 +2,14 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiUser, FiLogOut, FiUserCheck, FiChevronDown } from "react-icons/fi";
-import { useTheme } from "next-themes";
+import { FiUser, FiLogOut, FiChevronDown } from "react-icons/fi";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 const ProfileDropdown = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

@@ -4,16 +4,16 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { FiEye, FiShoppingCart, FiHeart } from "react-icons/fi";
-import { useTheme } from "next-themes";
+
 import type { Product } from "@/data/products";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 interface ProductCardProps {
   product: Product;
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
   const [isHovered, setIsHovered] = useState(false);
 
   const formatPrice = (price: number) => {

@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 interface Category {
   name: string;
@@ -42,8 +43,7 @@ const MegaMenu = ({
   categories = demoCategories,
   onClose,
 }: MegaMenuProps) => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
 
   const bgColor = isDark ? "#1E293B" : "#FFFFFF";
   const borderColor = isDark ? "#334155" : "#E2E8F0";

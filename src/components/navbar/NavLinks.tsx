@@ -5,15 +5,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { FiChevronDown } from "react-icons/fi";
 import MegaMenu from "./MegaMenu";
-import { useTheme } from "next-themes";
 import { authClient } from "@/lib/auth-client";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 const NavLinks = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
   const pathname = usePathname();
   const [isMegaOpen, setIsMegaOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const { isDark } = useMountedTheme();
 
   const { data: session } = authClient.useSession();
   const user = session?.user as

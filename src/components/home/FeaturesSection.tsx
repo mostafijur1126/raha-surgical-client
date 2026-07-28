@@ -1,11 +1,11 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
+
 import { FaShieldAlt, FaTruck, FaHeadset } from "react-icons/fa";
 
 const FeaturesSection = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
 
   const features = [
     {

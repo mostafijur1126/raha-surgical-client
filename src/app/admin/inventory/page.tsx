@@ -8,7 +8,6 @@ import {
   FiTrash2,
   FiPlus,
   FiInfo,
-  FiFileText,
   FiCheckCircle,
   FiX,
   FiLoader,
@@ -206,16 +205,6 @@ export default function InventoryPage() {
     }
     console.log("Publish product:", buildPayload());
     // TODO: POST to /api/admin/products
-  };
-
-  const handleSaveTemplate = () => {
-    console.log("Save as template:", buildPayload());
-    // TODO: POST to /api/admin/products/templates
-  };
-
-  const handleDiscard = () => {
-    console.log("Discard draft");
-    // TODO: clear/reset or navigate away
   };
 
   if (!mounted) return null;
@@ -683,29 +672,7 @@ export default function InventoryPage() {
 
             {/* Actions */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={handleDiscard}
-                className="flex items-center gap-1.5 text-sm font-medium transition-colors"
-                style={{ color: textMuted }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = isDark ? "#F87171" : "#DC2626")
-                }
-                onMouseLeave={(e) => (e.currentTarget.style.color = textMuted)}
-              >
-                <FiTrash2 className="w-4 h-4" />
-                Discard Draft
-              </button>
-
               <div className="flex items-center gap-3 w-full sm:w-auto">
-                <button
-                  type="button"
-                  onClick={handleSaveTemplate}
-                  className="flex-1 sm:flex-none px-5 py-2.5 rounded-lg border text-sm font-semibold transition-colors"
-                  style={{ borderColor: inputBorder, color: textPrimary }}
-                >
-                  Save as Template
-                </button>
                 <motion.button
                   whileTap={{ scale: 0.97 }}
                   type="submit"

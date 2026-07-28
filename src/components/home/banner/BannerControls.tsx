@@ -1,6 +1,6 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 interface BannerControlsProps {
   total: number;
@@ -17,8 +17,7 @@ const BannerControls = ({
   onNext,
   onDotClick,
 }: BannerControlsProps) => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
 
   const dotColor = isDark ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.6)";
   const dotActiveColor = isDark ? "#60A5FA" : "#FFFFFF";

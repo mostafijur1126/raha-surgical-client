@@ -1,21 +1,15 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState } from "react";
 import { FiSearch } from "react-icons/fi";
-import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 const SearchBar = () => {
-  const { theme } = useTheme();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
   const [query, setQuery] = useState("");
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const isDark = mounted && theme === "dark";
+  const { isDark } = useMountedTheme();
 
   const bgColor = isDark ? "#1E293B" : "#F1F5F9";
   const textColor = isDark ? "#F1F5F9" : "#0F172A";

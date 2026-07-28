@@ -5,8 +5,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import { useTheme } from "next-themes";
+
 import BannerControls from "./BannerControls";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 // Slide data – replace images with your own high‑quality surgical equipment photos
 const slides = [
@@ -45,8 +46,7 @@ const slides = [
 ];
 
 const BannerSlider = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
 

@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
 import {
   FaHeartbeat,
   FaPhone,
@@ -14,10 +13,10 @@ import {
   FaTwitter,
   FaArrowUp,
 } from "react-icons/fa";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 const Footer = () => {
-  const { theme, resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
+  const { isDark } = useMountedTheme();
   const currentYear = new Date().getFullYear();
   const [showBackToTop, setShowBackToTop] = useState(false);
 

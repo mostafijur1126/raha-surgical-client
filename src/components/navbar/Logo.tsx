@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { FaHeartbeat } from "react-icons/fa";
-import { useTheme } from "next-themes";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 const Logo = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
 
   const primaryColor = isDark ? "#60A5FA" : "#025395";
   const textColor = isDark ? "#F1F5F9" : "#0F172A";

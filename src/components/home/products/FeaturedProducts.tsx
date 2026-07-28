@@ -1,14 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useTheme } from "next-themes";
 import Link from "next/link";
 import ProductCard from "./ProductCard";
 import { featuredProducts } from "@/data/products";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 const FeaturedProducts = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
 
   // Animation variants
   const containerVariants = {
