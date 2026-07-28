@@ -14,6 +14,7 @@ import {
   FiAlertCircle,
 } from "react-icons/fi";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
+import { addProduct } from "@/lib/action/product";
 
 interface UploadedImage {
   id: string;
@@ -190,20 +191,22 @@ export default function InventoryPage() {
     rxRequired,
     description,
     pricingTiers: tiers.map(({ id, ...rest }) => rest),
-    // ✅ raw File na, Cloudinary theke pawa secure_url gulo pathano hocche —
-    // backend e eigulo directly database e save kora jabe
+
     imageUrls: images
       .filter((img) => img.status === "done" && img.cloudinaryUrl)
       .map((img) => img.cloudinaryUrl as string),
   });
 
-  const handlePublish = (e: React.FormEvent) => {
+  const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isAnyImageUploading) {
       console.log("Please wait — images are still uploading to Cloudinary.");
       return;
     }
-    console.log("Publish product:", buildPayload());
+    const productData = buildPayload();
+    const result = await addProduct(productData);
+
+    console.log("Publish product:", result);
     // TODO: POST to /api/admin/products
   };
 
