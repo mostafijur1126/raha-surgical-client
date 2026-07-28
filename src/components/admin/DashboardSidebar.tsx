@@ -12,6 +12,7 @@ import {
   FaSignOutAlt,
   FaHeartbeat,
 } from "react-icons/fa";
+import { MdOutlineInventory2 } from "react-icons/md";
 
 const DashboardSidebar = () => {
   const { theme } = useTheme();
@@ -31,8 +32,9 @@ const DashboardSidebar = () => {
     { label: "Dashboard", href: "/admin/dashboard", icon: FaHome },
     { label: "Orders", href: "/admin/orders", icon: FaShoppingCart },
     { label: "Products", href: "/admin/products", icon: FaBoxes },
+    { label: "Inventory", href: "/admin/inventory", icon: MdOutlineInventory2 },
     { label: "Users", href: "/admin/users", icon: FaUsers },
-    { label: "Settings", href: "/admin/settings", icon: FaCog },
+    // { label: "Settings", href: "/admin/settings", icon: FaCog },
   ];
 
   return (
@@ -45,7 +47,7 @@ const DashboardSidebar = () => {
     >
       {/* Logo */}
       <div className="p-6 border-b" style={{ borderColor: borderColor }}>
-        <Link href="/admin/dashboard" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <FaHeartbeat className="w-6 h-6" style={{ color: activeColor }} />
           <span
             className="text-lg font-bold tracking-tight"

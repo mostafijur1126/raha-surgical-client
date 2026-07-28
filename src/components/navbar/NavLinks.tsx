@@ -7,7 +7,6 @@ import { FiChevronDown } from "react-icons/fi";
 import MegaMenu from "./MegaMenu";
 import { useTheme } from "next-themes";
 import { authClient } from "@/lib/auth-client";
-import { Baseline } from "lucide-react";
 
 const NavLinks = () => {
   const { theme } = useTheme();
@@ -47,7 +46,7 @@ const NavLinks = () => {
   ];
 
   const links = isAdmin
-    ? [...baseLinks, { label: "Dashboard", href: "/dashboard/admin" }]
+    ? [...baseLinks, { label: "Dashboard", href: "/admin/dashboard" }]
     : baseLinks;
 
   const primary = isDark ? "#60A5FA" : "#025395";
