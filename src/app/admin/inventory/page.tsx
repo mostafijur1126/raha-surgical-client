@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FiUploadCloud,
@@ -15,6 +14,8 @@ import {
 } from "react-icons/fi";
 import { uploadImageToCloudinary } from "@/lib/cloudinary";
 import { addProduct } from "@/lib/action/product";
+import toast from "react-hot-toast";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 interface UploadedImage {
   id: string;
@@ -48,10 +49,9 @@ const createTier = (
 const UNIT_PRESETS = ["Single Piece", "Box of 10", "Box of 25", "Case of 50"];
 
 export default function InventoryPage() {
-  const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  const isDark = mounted && theme === "dark";
+  const { isDark } = useMountedTheme();
 
   // Form state
   const [productName, setProductName] = useState("");
@@ -66,6 +66,19 @@ export default function InventoryPage() {
   const [tiers, setTiers] = useState<PricingTier[]>([
     createTier("Single Piece", 1, "MPS-00492"),
   ]);
+
+  const clearForm = () => {
+    (setProductName(""),
+      setCategory(""),
+      setBrand(""),
+      setBaseSku("MPS-00492"),
+      setStockLevel(0),
+      setRxRequired(true),
+      setDescription(""),
+      setIsDragging(false),
+      setImages([]),
+      setTiers([createTier("Single Piece", 1, "MPS-00492")]));
+  };
 
   // ---- Theme tokens (matches the rest of the RAHA admin UI) ----
   const primary = isDark ? "#60A5FA" : "#025395";
@@ -206,8 +219,10 @@ export default function InventoryPage() {
     const productData = buildPayload();
     const result = await addProduct(productData);
 
-    console.log("Publish product:", result);
-    // TODO: POST to /api/admin/products
+    if (result.success === true) {
+      toast.success("Product added successfully!");
+      clearForm();
+    }
   };
 
   if (!mounted) return null;

@@ -27,7 +27,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   // Theme-aware colors
   const cardBg = isDark ? "#1E293B" : "#FFFFFF";
-  const cardBorder = isDark ? "#334155" : "#E2E8F0";
+  const cardBorder = isDark ? "#334155" : "#E8EEF5";
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
   const textSecondary = isDark ? "#94A3B8" : "#475569";
   const brandColor = isDark ? "#60A5FA" : "#025395";
@@ -39,6 +39,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const iconColor = isDark ? "#E2E8F0" : "#334155";
   const iconHoverBg = isDark ? "#2D3748" : "#EFF6FF";
   const iconHoverColor = isDark ? "#60A5FA" : "#025395";
+  const placeholderBg = isDark ? "#1E293B" : "#F1F5F9";
 
   return (
     <motion.div
@@ -54,7 +55,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
       transition={{ duration: 0.4 }}
     >
       {/* Image */}
-      <div className="relative aspect-square overflow-hidden bg-slate-100 dark:bg-slate-800">
+      <div
+        className="relative aspect-square overflow-hidden"
+        style={{ backgroundColor: placeholderBg }}
+      >
         <Image
           src={product.image}
           alt={product.name}
@@ -132,7 +136,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           {product.name}
         </h3>
 
-        {/* Price */}
+        {/* Price & View Button */}
         <div className="flex items-center justify-between pt-1">
           <div>
             <span className="text-lg font-bold" style={{ color: textPrimary }}>

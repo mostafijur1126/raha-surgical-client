@@ -1,16 +1,15 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { OrderData } from "@/data/adminDashboardData";
 import Link from "next/link";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 interface RecentOrdersProps {
   orders: OrderData[];
 }
 
 const RecentOrders = ({ orders }: RecentOrdersProps) => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
 
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
   const textSecondary = isDark ? "#94A3B8" : "#475569";

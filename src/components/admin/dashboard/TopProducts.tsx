@@ -1,22 +1,20 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { ProductData } from "@/data/adminDashboardData";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 interface TopProductsProps {
   products: ProductData[];
 }
 
 const TopProducts = ({ products }: TopProductsProps) => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
 
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
   const textSecondary = isDark ? "#94A3B8" : "#475569";
   const textMuted = isDark ? "#64748B" : "#64748B";
   const cardBg = isDark ? "#1E293B" : "#FFFFFF";
   const cardBorder = isDark ? "#334155" : "#E8EEF5";
-  const primaryColor = isDark ? "#60A5FA" : "#025395";
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {

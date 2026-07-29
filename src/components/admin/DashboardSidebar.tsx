@@ -1,6 +1,7 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -8,15 +9,13 @@ import {
   FaShoppingCart,
   FaBoxes,
   FaUsers,
-  FaCog,
   FaSignOutAlt,
   FaHeartbeat,
 } from "react-icons/fa";
 import { MdOutlineInventory2 } from "react-icons/md";
 
 const DashboardSidebar = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
   const pathname = usePathname();
 
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";

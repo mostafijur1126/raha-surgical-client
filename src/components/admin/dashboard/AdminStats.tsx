@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import {
   FaDollarSign,
   FaShoppingCart,
@@ -8,6 +7,7 @@ import {
   FaExclamationTriangle,
 } from "react-icons/fa";
 import { StatCardData } from "@/data/adminDashboardData";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 interface AdminStatsProps {
   stats: StatCardData[];
@@ -21,8 +21,7 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 const AdminStats = ({ stats }: AdminStatsProps) => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
 
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
   const textSecondary = isDark ? "#94A3B8" : "#475569";

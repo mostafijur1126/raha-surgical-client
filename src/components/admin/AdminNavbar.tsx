@@ -1,11 +1,10 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 import { FaBell, FaUserCircle, FaSearch } from "react-icons/fa";
 
 const AdminNavbar = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
 
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
   const textSecondary = isDark ? "#94A3B8" : "#475569";

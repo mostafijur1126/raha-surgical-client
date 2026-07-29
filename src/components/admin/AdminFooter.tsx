@@ -1,11 +1,10 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 import Link from "next/link";
 
 const AdminFooter = () => {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
 
   const textMuted = isDark ? "#64748B" : "#64748B";
   const primaryColor = isDark ? "#60A5FA" : "#025395";

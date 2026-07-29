@@ -1,7 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
-
 import {
   statCardsData,
   recentOrdersData,
@@ -12,10 +10,10 @@ import AdminStats from "@/components/admin/dashboard/AdminStats";
 import RevenueChart from "@/components/admin/dashboard/RevenueChart";
 import TopProducts from "@/components/admin/dashboard/TopProducts";
 import RecentOrders from "@/components/admin/dashboard/RecentOrders";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 export default function AdminDashboardPage() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { isDark } = useMountedTheme();
 
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
   const textSecondary = isDark ? "#94A3B8" : "#475569";

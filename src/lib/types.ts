@@ -1,12 +1,23 @@
+export interface PricingTier {
+  unitType: string;
+  unitsPerPackage: number;
+  price: string;
+  sku: string;
+}
+
 export interface Product {
-  id: string;
-  name: string;
+  _id: string;
+  productName: string;
   brand: string;
-  price: number;
-  rating: number;
-  image: string;
   category: string;
-  inStock: boolean;
+  baseSku: string;
+  stockLevel: number;
+  rxRequired: boolean;
+  description: string;
+  imageUrls: string[];
+  pricingTiers: PricingTier[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface FilterState {
@@ -14,5 +25,4 @@ export interface FilterState {
   brands: string[];
   priceRange: [number, number];
   inStockOnly: boolean;
-  minRating: number;
 }
