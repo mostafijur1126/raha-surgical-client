@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FiChevronDown, FiX } from "react-icons/fi";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
+import { authClient } from "@/lib/auth-client";
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -18,11 +19,21 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
   const pathname = usePathname();
   const [productsOpen, setProductsOpen] = useState(false);
 
-  const links = [
+  const { data: session } = authClient.useSession();
+  const user = session?.user as
+    | (typeof session extends { user: infer U } ? U : never)
+    | undefined;
+
+  const isAdmin = user?.role === "admin";
+
+  const baseLink = [
     { label: "Home", href: "/" },
-    { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
   ];
+
+  const links = isAdmin
+    ? [...baseLink, { label: "Dashboard", href: "/admin/dashboard" }]
+    : baseLink;
 
   const bg = isDark ? "#1E293B" : "#FFFFFF";
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
