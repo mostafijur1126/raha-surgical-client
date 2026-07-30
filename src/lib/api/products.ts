@@ -10,3 +10,7 @@ export const getProducts = (category?: string) => {
 export const getCategories = () => {
   return serverFetch("/categories");
 };
+
+export const getFeaturedProducts = () => {
+  return serverFetch("/featured-products");
+};

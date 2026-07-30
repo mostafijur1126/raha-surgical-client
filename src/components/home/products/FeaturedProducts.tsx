@@ -3,11 +3,22 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import ProductCard from "./ProductCard";
-import { featuredProducts } from "@/data/products";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
+import { useEffect, useState } from "react";
+import { getFeaturedProducts } from "@/lib/api/products";
 
 const FeaturedProducts = () => {
   const { isDark } = useMountedTheme();
+  const featuredProducts = [];
+  const [product, setproduct] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getFeaturedProducts();
+      console.log(data.data);
+      setproduct(data.data);
+    };
+    fetchData();
+  }, []);
 
   // Animation variants
   const containerVariants = {
@@ -67,8 +78,8 @@ const FeaturedProducts = () => {
           animate="visible"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6"
         >
-          {featuredProducts.map((product) => (
-            <motion.div key={product.id} variants={childVariants}>
+          {product.map((product) => (
+            <motion.div key={product._id} variants={childVariants}>
               <ProductCard product={product} />
             </motion.div>
           ))}

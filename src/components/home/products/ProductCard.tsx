@@ -4,24 +4,32 @@ import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { FiEye, FiShoppingCart, FiHeart } from "react-icons/fi";
-
-import type { Product } from "@/data/products";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 interface ProductCardProps {
-  product: Product;
+  product: any; // Replace with actual type when available
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { isDark } = useMountedTheme();
   const [isHovered, setIsHovered] = useState(false);
 
+  // Extract data from product
+  const productName = product.productName || "Unnamed Product";
+  const brand = product.brand || "Unknown Brand";
+  const image = product.imageUrls?.[0] || "";
+  const stockLevel = product.stockLevel ?? 0;
+  const inStock = stockLevel > 0;
+  const pricingTiers = product.pricingTiers || [];
+  const basePrice =
+    pricingTiers.length > 0 ? parseFloat(pricingTiers[0].price) || 0 : 0;
+
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      currency: "BDT",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(price);
   };
 
@@ -43,7 +51,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <motion.div
-      className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border"
+      className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border h-full flex flex-col"
       style={{
         backgroundColor: cardBg,
         borderColor: cardBorder,
@@ -56,21 +64,30 @@ const ProductCard = ({ product }: ProductCardProps) => {
     >
       {/* Image */}
       <div
-        className="relative aspect-square overflow-hidden"
+        className="relative aspect-square overflow-hidden flex-shrink-0"
         style={{ backgroundColor: placeholderBg }}
       >
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          className={`object-cover transition-transform duration-500 ${
-            isHovered ? "scale-105" : "scale-100"
-          }`}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-        />
+        {image ? (
+          <Image
+            src={image}
+            alt={productName}
+            fill
+            className={`object-cover transition-transform duration-500 ${
+              isHovered ? "scale-105" : "scale-100"
+            }`}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          />
+        ) : (
+          <div
+            className="w-full h-full flex items-center justify-center text-sm"
+            style={{ color: textSecondary }}
+          >
+            No Image
+          </div>
+        )}
 
         {/* In Stock Badge */}
-        {product.inStock && (
+        {inStock && (
           <span
             className="absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold tracking-wide rounded-full border"
             style={{
@@ -119,28 +136,28 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-2 flex flex-col flex-1">
         {/* Brand */}
         <p
           className="text-xs font-medium uppercase tracking-wider"
           style={{ color: brandColor }}
         >
-          {product.brand}
+          {brand}
         </p>
 
         {/* Product Name */}
         <h3
-          className="text-sm font-semibold leading-tight line-clamp-2 min-h-[2.5rem]"
+          className="text-sm font-semibold leading-tight line-clamp-2 flex-1"
           style={{ color: textPrimary }}
         >
-          {product.name}
+          {productName}
         </h3>
 
         {/* Price & View Button */}
-        <div className="flex items-center justify-between pt-1">
+        <div className="flex items-center justify-between pt-1 mt-auto">
           <div>
             <span className="text-lg font-bold" style={{ color: textPrimary }}>
-              {formatPrice(product.price)}
+              {formatPrice(basePrice)}
             </span>
           </div>
 
