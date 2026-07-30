@@ -7,44 +7,13 @@ import { useEffect, useState } from "react";
 import { FiChevronDown, FiX } from "react-icons/fi";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 
-interface Category {
-  name: string;
-  slug: string;
-}
-
-const demoCategories: Category[] = [
-  {
-    name: "General Surgical Instruments",
-    slug: "general-surgical-instruments",
-  },
-  { name: "Medical Disposables", slug: "medical-disposables" },
-  { name: "Orthopedic Implants", slug: "orthopedic-implants" },
-  { name: "Hospital Furniture", slug: "hospital-furniture" },
-  { name: "ICU Equipment", slug: "icu-equipment" },
-  { name: "Diagnostic Equipment", slug: "diagnostic-equipment" },
-  { name: "Dental Equipment", slug: "dental-equipment" },
-  { name: "Laboratory Products", slug: "laboratory-products" },
-  { name: "Emergency Products", slug: "emergency-products" },
-  { name: "Rehabilitation Products", slug: "rehabilitation-products" },
-  { name: "OT Equipment", slug: "ot-equipment" },
-  { name: "Patient Monitor", slug: "patient-monitor" },
-  { name: "Radiology Equipment", slug: "radiology-equipment" },
-  { name: "Sterilization Products", slug: "sterilization-products" },
-  { name: "Blood Collection", slug: "blood-collection" },
-  { name: "Physiotherapy Equipment", slug: "physiotherapy-equipment" },
-];
-
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  categories?: Category[];
+  categories: string[];
 }
 
-const MobileMenu = ({
-  isOpen,
-  onClose,
-  categories = demoCategories,
-}: MobileMenuProps) => {
+const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
   const { isDark } = useMountedTheme();
   const pathname = usePathname();
   const [productsOpen, setProductsOpen] = useState(false);
@@ -154,10 +123,15 @@ const MobileMenu = ({
                           borderLeft: `2px solid ${isDark ? "#3B82F6" : "#025395"}20`,
                         }}
                       >
-                        {categories.map((cat) => (
+                        {categories.map((category) => (
                           <Link
-                            key={cat.slug}
-                            href={`/products/category/${cat.slug}`}
+                            key={category}
+                            href={{
+                              pathname: "/products",
+                              query: {
+                                category,
+                              },
+                            }}
                             className="block px-3 py-2 text-sm rounded-md transition-colors"
                             style={{ color: textSecondary }}
                             onMouseEnter={(e) => {
@@ -171,7 +145,13 @@ const MobileMenu = ({
                             }}
                             onClick={onClose}
                           >
-                            {cat.name}
+                            {category
+                              .split("-")
+                              .map(
+                                (word) =>
+                                  word.charAt(0).toUpperCase() + word.slice(1),
+                              )
+                              .join(" ")}
                           </Link>
                         ))}
                       </div>

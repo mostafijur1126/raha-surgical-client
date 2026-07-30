@@ -3,36 +3,15 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
-import { useEffect, useState } from "react";
-import { getCategories } from "@/lib/api/products";
 
 interface MegaMenuProps {
+  categories: string[];
   isOpen: boolean;
   onClose: () => void;
 }
 
-const MegaMenu = ({
-  isOpen,
-  // categories = demoCategories,
-  onClose,
-}: MegaMenuProps) => {
-  const [categories, setCategories] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+const MegaMenu = ({ isOpen, categories, onClose }: MegaMenuProps) => {
   const { isDark } = useMountedTheme();
-  useEffect(() => {
-    const fetchCategory = async () => {
-      try {
-        const response = await getCategories();
-        setCategories(response.data);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategory();
-  }, []);
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   const bgColor = isDark ? "#1E293B" : "#FFFFFF";
   const borderColor = isDark ? "#334155" : "#E2E8F0";

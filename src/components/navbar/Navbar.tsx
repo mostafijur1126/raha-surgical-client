@@ -9,12 +9,27 @@ import ProfileDropdown from "./ProfileDropdown";
 import MobileMenu from "./MobileMenu";
 import ThemeToggle from "../theme-toggle/ThemeToggle";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
+import { getCategories } from "@/lib/api/products";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { isDark } = useMountedTheme();
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getCategories();
+        setCategories(res.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -61,7 +76,7 @@ const Navbar = () => {
             </div>
 
             <div className="flex items-center gap-2 md:gap-4">
-              <NavLinks />
+              <NavLinks categories={categories} />
               <ThemeToggle />
 
               <button
@@ -94,6 +109,7 @@ const Navbar = () => {
       </header>
 
       <MobileMenu
+        categories={categories}
         isOpen={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
       />

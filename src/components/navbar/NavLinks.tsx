@@ -8,7 +8,11 @@ import MegaMenu from "./MegaMenu";
 import { authClient } from "@/lib/auth-client";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 
-const NavLinks = () => {
+interface NavLinksProps {
+  categories: string[];
+}
+
+const NavLinks = ({ categories }: NavLinksProps) => {
   const { isDark } = useMountedTheme();
 
   const pathname = usePathname();
@@ -94,6 +98,7 @@ const NavLinks = () => {
                 />
               </Link>
               <MegaMenu
+                categories={categories}
                 isOpen={isMegaOpen}
                 onClose={() => setIsMegaOpen(false)}
               />
