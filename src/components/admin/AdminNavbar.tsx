@@ -1,9 +1,13 @@
 "use client";
 
 import { useMountedTheme } from "@/hooks/useMountedTheme";
-import { FaBell, FaUserCircle, FaSearch } from "react-icons/fa";
+import { FaBell, FaUserCircle, FaSearch, FaBars } from "react-icons/fa";
 
-const AdminNavbar = () => {
+interface AdminNavbarProps {
+  onMenuClick?: () => void;
+}
+
+const AdminNavbar = ({ onMenuClick }: AdminNavbarProps) => {
   const { isDark } = useMountedTheme();
 
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
@@ -12,24 +16,41 @@ const AdminNavbar = () => {
   const borderColor = isDark ? "#334155" : "#E8EEF5";
   const inputBg = isDark ? "#1E293B" : "#F8FAFC";
   const inputBorder = isDark ? "#334155" : "#E2E8F0";
+  const hoverBg = isDark ? "#1E293B" : "#F1F5F9";
 
   return (
     <header
-      className="border-b px-6 py-3 flex items-center justify-between transition-colors duration-300"
+      className="border-b px-4 sm:px-6 py-3 flex items-center justify-between transition-colors duration-300"
       style={{
         backgroundColor: bg,
         borderColor: borderColor,
       }}
     >
-      {/* Left: Page Title (could be dynamic) */}
-      <div>
+      {/* Left: Menu Toggle + Page Title */}
+      <div className="flex items-center gap-3">
+        {/* Mobile menu button */}
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden p-2 rounded-lg transition-colors duration-200"
+          style={{ color: textSecondary }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = hoverBg;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+          aria-label="Toggle sidebar"
+        >
+          <FaBars className="w-5 h-5" />
+        </button>
+
         <h2 className="text-lg font-semibold" style={{ color: textPrimary }}>
           Dashboard
         </h2>
       </div>
 
       {/* Right: Search + Notifications + Profile */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         {/* Search */}
         <div className="relative hidden md:block">
           <FaSearch

@@ -1,9 +1,9 @@
 "use client";
 
 import { useMountedTheme } from "@/hooks/useMountedTheme";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FaHome,
   FaShoppingCart,
@@ -11,10 +11,19 @@ import {
   FaUsers,
   FaSignOutAlt,
   FaHeartbeat,
+  FaTimes,
 } from "react-icons/fa";
 import { MdOutlineInventory2 } from "react-icons/md";
 
-const DashboardSidebar = () => {
+interface DashboardSidebarProps {
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
+}
+
+const DashboardSidebar = ({
+  isMobileOpen = false,
+  onMobileClose,
+}: DashboardSidebarProps) => {
   const { isDark } = useMountedTheme();
   const pathname = usePathname();
 
@@ -33,19 +42,16 @@ const DashboardSidebar = () => {
     { label: "Products", href: "/admin/products", icon: FaBoxes },
     { label: "Inventory", href: "/admin/inventory", icon: MdOutlineInventory2 },
     { label: "Users", href: "/admin/users", icon: FaUsers },
-    // { label: "Settings", href: "/admin/settings", icon: FaCog },
   ];
 
-  return (
-    <aside
-      className="w-64 h-screen sticky top-0 border-r flex flex-col transition-colors duration-300"
-      style={{
-        backgroundColor: bg,
-        borderColor: borderColor,
-      }}
-    >
+  // Sidebar content shared between desktop and mobile
+  const SidebarContent = () => (
+    <>
       {/* Logo */}
-      <div className="p-6 border-b" style={{ borderColor: borderColor }}>
+      <div
+        className="p-6 border-b flex-shrink-0"
+        style={{ borderColor: borderColor }}
+      >
         <Link href="/" className="flex items-center gap-2">
           <FaHeartbeat className="w-6 h-6" style={{ color: activeColor }} />
           <span
@@ -83,6 +89,7 @@ const DashboardSidebar = () => {
                   e.currentTarget.style.color = textSecondary;
                 }
               }}
+              onClick={onMobileClose}
             >
               <Icon className="w-5 h-5 flex-shrink-0" />
               <span className="text-sm font-medium">{item.label}</span>
@@ -92,7 +99,10 @@ const DashboardSidebar = () => {
       </nav>
 
       {/* Footer - Logout */}
-      <div className="p-4 border-t" style={{ borderColor: borderColor }}>
+      <div
+        className="p-4 border-t flex-shrink-0"
+        style={{ borderColor: borderColor }}
+      >
         <button
           className="flex items-center gap-3 px-3 py-2.5 w-full rounded-lg transition-all duration-200"
           style={{ color: textMuted }}
@@ -110,7 +120,71 @@ const DashboardSidebar = () => {
           <span className="text-sm font-medium">Logout</span>
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Sidebar - visible on lg+ */}
+      <aside
+        className="hidden lg:flex lg:flex-col w-64 h-screen sticky top-0 border-r flex-shrink-0 transition-colors duration-300"
+        style={{
+          backgroundColor: bg,
+          borderColor: borderColor,
+        }}
+      >
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Sidebar - slide-in drawer */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-50 lg:hidden"
+              style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+              onClick={onMobileClose}
+            />
+
+            {/* Drawer */}
+            <motion.aside
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.3, ease: "easeInOut" }}
+              className="fixed top-0 left-0 z-50 lg:hidden w-4/5 max-w-sm h-full flex flex-col shadow-xl"
+              style={{ backgroundColor: bg }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <div className="absolute top-4 right-4 z-10">
+                <button
+                  onClick={onMobileClose}
+                  className="p-2 rounded-full transition-colors"
+                  style={{ color: textSecondary }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = hoverBg;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                  aria-label="Close sidebar"
+                >
+                  <FaTimes className="w-5 h-5" />
+                </button>
+              </div>
+
+              <SidebarContent />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

@@ -14,7 +14,7 @@ const AdminFooter = () => {
 
   return (
     <div
-      className="border-t px-6 py-4 transition-colors duration-300"
+      className="border-t px-4 sm:px-6 py-4 transition-colors duration-300"
       style={{
         backgroundColor: bg,
         borderColor: borderColor,
