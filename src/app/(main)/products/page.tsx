@@ -10,11 +10,15 @@ import SortDropdown from "@/components/products/SortDropdown";
 import Pagination from "@/components/products/Pagination";
 import { getProducts } from "@/lib/api/products";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
+import { useSearchParams } from "next/navigation";
 
 const ITEMS_PER_PAGE = 12;
 
 export default function ProductsPage() {
   const { isDark } = useMountedTheme();
+  const searchParams = useSearchParams();
+
+  const category = searchParams.get("category");
 
   const [filters, setFilters] = useState<FilterState>({
     categories: [],
@@ -30,12 +34,13 @@ export default function ProductsPage() {
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
-      const data = await getProducts();
-      setProducts(data);
+      const data = await getProducts(category);
+      setProducts(data.data);
+      setCurrentPage(1);
       setIsLoading(false);
     };
     fetchProducts();
-  }, []);
+  }, [filters, sortBy, category]);
 
   useEffect(() => {
     setCurrentPage(1);

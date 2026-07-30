@@ -2,48 +2,37 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { useTheme } from "next-themes";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
-
-interface Category {
-  name: string;
-  slug: string;
-}
-
-const demoCategories: Category[] = [
-  {
-    name: "General Surgical Instruments",
-    slug: "general-surgical-instruments",
-  },
-  { name: "Medical Disposables", slug: "medical-disposables" },
-  { name: "Orthopedic Implants", slug: "orthopedic-implants" },
-  { name: "Hospital Furniture", slug: "hospital-furniture" },
-  { name: "ICU Equipment", slug: "icu-equipment" },
-  { name: "Diagnostic Equipment", slug: "diagnostic-equipment" },
-  { name: "Dental Equipment", slug: "dental-equipment" },
-  { name: "Laboratory Products", slug: "laboratory-products" },
-  { name: "Emergency Products", slug: "emergency-products" },
-  { name: "Rehabilitation Products", slug: "rehabilitation-products" },
-  { name: "OT Equipment", slug: "ot-equipment" },
-  { name: "Patient Monitor", slug: "patient-monitor" },
-  { name: "Radiology Equipment", slug: "radiology-equipment" },
-  { name: "Sterilization Products", slug: "sterilization-products" },
-  { name: "Blood Collection", slug: "blood-collection" },
-  { name: "Physiotherapy Equipment", slug: "physiotherapy-equipment" },
-];
+import { useEffect, useState } from "react";
+import { getCategories } from "@/lib/api/products";
 
 interface MegaMenuProps {
   isOpen: boolean;
-  categories?: Category[];
   onClose: () => void;
 }
 
 const MegaMenu = ({
   isOpen,
-  categories = demoCategories,
+  // categories = demoCategories,
   onClose,
 }: MegaMenuProps) => {
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
   const { isDark } = useMountedTheme();
+  useEffect(() => {
+    const fetchCategory = async () => {
+      try {
+        const response = await getCategories();
+        setCategories(response.data);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategory();
+  }, []);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   const bgColor = isDark ? "#1E293B" : "#FFFFFF";
   const borderColor = isDark ? "#334155" : "#E2E8F0";
@@ -56,7 +45,6 @@ const MegaMenu = ({
   const columnData = Array.from({ length: columns }, (_, i) =>
     categories.slice(i * chunkSize, (i + 1) * chunkSize),
   );
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -80,8 +68,13 @@ const MegaMenu = ({
                 <div key={colIdx} className="space-y-1.5">
                   {column.map((category) => (
                     <Link
-                      key={category.slug}
-                      href={`/products/category/${category.slug}`}
+                      key={category}
+                      href={{
+                        pathname: "/products",
+                        query: {
+                          category,
+                        },
+                      }}
                       onClick={onClose}
                       className="block px-2 py-1.5 text-sm rounded-md transition-colors duration-150"
                       style={{ color: textColor }}
@@ -94,7 +87,13 @@ const MegaMenu = ({
                         e.currentTarget.style.backgroundColor = "transparent";
                       }}
                     >
-                      {category.name}
+                      {category
+                        .split("-")
+                        .map(
+                          (word) =>
+                            word.charAt(0).toUpperCase() + word.slice(1),
+                        )
+                        .join(" ")}
                     </Link>
                   ))}
                 </div>

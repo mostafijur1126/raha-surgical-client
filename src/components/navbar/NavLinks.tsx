@@ -9,11 +9,11 @@ import { authClient } from "@/lib/auth-client";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 const NavLinks = () => {
+  const { isDark } = useMountedTheme();
+
   const pathname = usePathname();
   const [isMegaOpen, setIsMegaOpen] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const { isDark } = useMountedTheme();
 
   const { data: session } = authClient.useSession();
   const user = session?.user as
@@ -65,7 +65,8 @@ const NavLinks = () => {
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
-              <button
+              <Link
+                href={link.href}
                 className="flex items-center gap-0.5 px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200"
                 style={{
                   color: isActive ? primary : textDefault,
@@ -91,7 +92,7 @@ const NavLinks = () => {
                   }`}
                   style={{ color: isActive ? primary : textDefault }}
                 />
-              </button>
+              </Link>
               <MegaMenu
                 isOpen={isMegaOpen}
                 onClose={() => setIsMegaOpen(false)}

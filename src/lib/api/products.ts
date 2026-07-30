@@ -1,5 +1,12 @@
 import { serverFetch } from "../core/server";
 
-export const getProducts = () => {
+export const getProducts = (category?: string) => {
+  if (category) {
+    return serverFetch(`/products?category=${encodeURIComponent(category)}`);
+  }
   return serverFetch("/products");
+};
+
+export const getCategories = () => {
+  return serverFetch("/categories");
 };
