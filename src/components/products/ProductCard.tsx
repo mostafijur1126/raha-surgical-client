@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { FiEye, FiShoppingCart, FiHeart } from "react-icons/fi";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 import { Product } from "@/lib/types";
+import Link from "next/link";
 
 interface ProductCardProps {
   product: Product; // Replace with actual type when available
@@ -63,120 +64,125 @@ const ProductCard = ({ product }: ProductCardProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      {/* Image */}
-      <div
-        className="relative aspect-square overflow-hidden flex-shrink-0"
-        style={{ backgroundColor: placeholderBg }}
-      >
-        {image ? (
-          <Image
-            src={image}
-            alt={productName}
-            fill
-            className={`object-cover transition-transform duration-500 ${
-              isHovered ? "scale-105" : "scale-100"
-            }`}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-          />
-        ) : (
-          <div
-            className="w-full h-full flex items-center justify-center text-sm"
-            style={{ color: textSecondary }}
-          >
-            No Image
-          </div>
-        )}
-
-        {/* In Stock Badge */}
-        {inStock && (
-          <span
-            className="absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold tracking-wide rounded-full border"
-            style={{
-              backgroundColor: stockBg,
-              borderColor: stockBorder,
-              color: stockText,
-            }}
-          >
-            IN STOCK
-          </span>
-        )}
-
-        {/* Quick Action Buttons (on hover) */}
+      <Link href={`/products/${product._id}`}>
+        {/* Image */}
         <div
-          className={`absolute inset-0 flex items-center justify-center gap-2 transition-opacity duration-300 ${
-            isHovered ? "opacity-100" : "opacity-0"
-          }`}
-          style={{ backgroundColor: overlayBg }}
+          className="relative aspect-square overflow-hidden flex-shrink-0"
+          style={{ backgroundColor: placeholderBg }}
         >
-          {[
-            { icon: FiEye, label: "Quick View" },
-            { icon: FiShoppingCart, label: "Add to Cart" },
-            { icon: FiHeart, label: "Wishlist" },
-          ].map(({ icon: Icon, label }) => (
-            <button
-              key={label}
-              className="p-2.5 rounded-full shadow-lg transition-colors duration-200"
+          {image ? (
+            <Image
+              src={image}
+              alt={productName}
+              fill
+              className={`object-cover transition-transform duration-500 ${
+                isHovered ? "scale-105" : "scale-100"
+              }`}
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            />
+          ) : (
+            <div
+              className="w-full h-full flex items-center justify-center text-sm"
+              style={{ color: textSecondary }}
+            >
+              No Image
+            </div>
+          )}
+
+          {/* In Stock Badge */}
+          {inStock && (
+            <span
+              className="absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold tracking-wide rounded-full border"
               style={{
-                backgroundColor: iconBg,
-                color: iconColor,
+                backgroundColor: stockBg,
+                borderColor: stockBorder,
+                color: stockText,
               }}
+            >
+              IN STOCK
+            </span>
+          )}
+
+          {/* Quick Action Buttons (on hover) */}
+          <div
+            className={`absolute inset-0 flex items-center justify-center gap-2 transition-opacity duration-300 ${
+              isHovered ? "opacity-100" : "opacity-0"
+            }`}
+            style={{ backgroundColor: overlayBg }}
+          >
+            {[
+              { icon: FiEye, label: "Quick View" },
+              { icon: FiShoppingCart, label: "Add to Cart" },
+              { icon: FiHeart, label: "Wishlist" },
+            ].map(({ icon: Icon, label }) => (
+              <button
+                key={label}
+                className="p-2.5 rounded-full shadow-lg transition-colors duration-200"
+                style={{
+                  backgroundColor: iconBg,
+                  color: iconColor,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = iconHoverBg;
+                  e.currentTarget.style.color = iconHoverColor;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = iconBg;
+                  e.currentTarget.style.color = iconColor;
+                }}
+                aria-label={label}
+              >
+                <Icon className="w-4 h-4" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 space-y-2 flex flex-col flex-1">
+          {/* Brand */}
+          <p
+            className="text-xs font-medium uppercase tracking-wider"
+            style={{ color: brandColor }}
+          >
+            {brand}
+          </p>
+
+          {/* Product Name */}
+          <h3
+            className="text-sm font-semibold leading-tight line-clamp-2 flex-1"
+            style={{ color: textPrimary }}
+          >
+            {productName}
+          </h3>
+
+          {/* Price & View Button */}
+          <div className="flex items-center justify-between pt-1 mt-auto">
+            <div>
+              <span
+                className="text-lg font-bold"
+                style={{ color: textPrimary }}
+              >
+                {formatPrice(basePrice)}
+              </span>
+            </div>
+
+            {/* View Button */}
+            <button
+              className="text-sm font-medium transition-colors hover:underline"
+              style={{ color: brandColor }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = iconHoverBg;
-                e.currentTarget.style.color = iconHoverColor;
+                e.currentTarget.style.color = isDark ? "#93C5FD" : "#01447A";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = iconBg;
-                e.currentTarget.style.color = iconColor;
+                e.currentTarget.style.color = brandColor;
               }}
-              aria-label={label}
             >
-              <Icon className="w-4 h-4" />
+              View →
             </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-4 space-y-2 flex flex-col flex-1">
-        {/* Brand */}
-        <p
-          className="text-xs font-medium uppercase tracking-wider"
-          style={{ color: brandColor }}
-        >
-          {brand}
-        </p>
-
-        {/* Product Name */}
-        <h3
-          className="text-sm font-semibold leading-tight line-clamp-2 flex-1"
-          style={{ color: textPrimary }}
-        >
-          {productName}
-        </h3>
-
-        {/* Price & View Button */}
-        <div className="flex items-center justify-between pt-1 mt-auto">
-          <div>
-            <span className="text-lg font-bold" style={{ color: textPrimary }}>
-              {formatPrice(basePrice)}
-            </span>
           </div>
-
-          {/* View Button */}
-          <button
-            className="text-sm font-medium transition-colors hover:underline"
-            style={{ color: brandColor }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = isDark ? "#93C5FD" : "#01447A";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = brandColor;
-            }}
-          >
-            View →
-          </button>
         </div>
-      </div>
+      </Link>
     </motion.div>
   );
 };

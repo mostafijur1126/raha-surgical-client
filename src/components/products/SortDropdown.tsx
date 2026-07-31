@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useTheme } from "next-themes";
+
 import { FiChevronDown } from "react-icons/fi";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 interface SortDropdownProps {
   value: string;
@@ -16,8 +17,7 @@ const options = [
 ];
 
 export default function SortDropdown({ value, onChange }: SortDropdownProps) {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const isDark = useMountedTheme();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

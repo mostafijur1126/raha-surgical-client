@@ -7,6 +7,10 @@ export const getProducts = (category?: string) => {
   return serverFetch("/products");
 };
 
+export const getProductById = (id: string) => {
+  return serverFetch(`/products/${id}`);
+};
+
 export const getCategories = () => {
   return serverFetch("/categories");
 };
