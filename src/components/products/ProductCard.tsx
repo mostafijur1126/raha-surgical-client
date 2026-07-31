@@ -1,89 +1,67 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { FiEye, FiShoppingCart, FiHeart } from "react-icons/fi";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
-
-interface Product {
-  _id: string;
-  productName: string;
-  brand: string;
-  imageUrls: string[];
-  stockLevel: number;
-  pricingTiers: Array<{
-    price?: number;
-    unitPrice?: number;
-    [key: string]: any;
-  }>;
-}
+import { Product } from "@/lib/types";
 
 interface ProductCardProps {
-  product: Product;
+  product: Product; // Replace with actual type when available
 }
-
-// Helper to extract price from pricingTiers
-const getProductPrice = (product: Product): number => {
-  if (!product.pricingTiers || product.pricingTiers.length === 0) {
-    return 0;
-  }
-  const tier = product.pricingTiers[0];
-  return tier?.price ?? tier?.unitPrice ?? 0;
-};
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { isDark } = useMountedTheme();
+  const [isHovered, setIsHovered] = useState(false);
+
+  // Extract data from product
+  const productName = product.productName || "Unnamed Product";
+  const brand = product.brand || "Unknown Brand";
+  const image = product.imageUrls?.[0] || "";
+  const stockLevel = product.stockLevel ?? 0;
+  const inStock = stockLevel > 0;
+  const pricingTiers = product.pricingTiers || [];
+  const basePrice =
+    pricingTiers.length > 0 ? parseFloat(pricingTiers[0].price) || 0 : 0;
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      currency: "BDT",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(price);
   };
-
-  // Extract data
-  const productName = product.productName || "Unnamed Product";
-  const brand = product.brand || "Unknown Brand";
-  const image = product.imageUrls?.[0] || "";
-  const inStock = product.stockLevel > 0;
-  const price = getProductPrice(product);
 
   // Theme-aware colors
   const cardBg = isDark ? "#1E293B" : "#FFFFFF";
   const cardBorder = isDark ? "#334155" : "#E8EEF5";
-  const cardBorderHover = isDark ? "#60A5FA" : "#025395";
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
+  const textSecondary = isDark ? "#94A3B8" : "#475569";
   const brandColor = isDark ? "#60A5FA" : "#025395";
   const stockBg = isDark ? "rgba(34,197,94,0.15)" : "#F0FDF4";
   const stockBorder = isDark ? "rgba(34,197,94,0.3)" : "#BBF7D0";
   const stockText = isDark ? "#4ADE80" : "#166534";
+  const overlayBg = isDark ? "rgba(15,23,42,0.5)" : "rgba(15,23,42,0.2)";
+  const iconBg = isDark ? "#1E293B" : "#FFFFFF";
+  const iconColor = isDark ? "#E2E8F0" : "#334155";
+  const iconHoverBg = isDark ? "#2D3748" : "#EFF6FF";
+  const iconHoverColor = isDark ? "#60A5FA" : "#025395";
   const placeholderBg = isDark ? "#1E293B" : "#F1F5F9";
 
   return (
     <motion.div
-      className="rounded-xl overflow-hidden shadow-sm transition-all duration-300 border h-full flex flex-col"
+      className="group relative rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border h-full flex flex-col"
       style={{
         backgroundColor: cardBg,
         borderColor: cardBorder,
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{
-        y: -6,
-        scale: 1.02,
-        boxShadow:
-          "0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)",
-        transition: { duration: 0.2 },
-      }}
       transition={{ duration: 0.4 }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = cardBorderHover;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = cardBorder;
-      }}
     >
       {/* Image */}
       <div
@@ -95,19 +73,21 @@ const ProductCard = ({ product }: ProductCardProps) => {
             src={image}
             alt={productName}
             fill
-            className="object-cover"
+            className={`object-cover transition-transform duration-500 ${
+              isHovered ? "scale-105" : "scale-100"
+            }`}
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
           />
         ) : (
           <div
             className="w-full h-full flex items-center justify-center text-sm"
-            style={{ color: textPrimary }}
+            style={{ color: textSecondary }}
           >
             No Image
           </div>
         )}
 
-        {/* IN STOCK Badge */}
+        {/* In Stock Badge */}
         {inStock && (
           <span
             className="absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold tracking-wide rounded-full border"
@@ -120,32 +100,69 @@ const ProductCard = ({ product }: ProductCardProps) => {
             IN STOCK
           </span>
         )}
+
+        {/* Quick Action Buttons (on hover) */}
+        <div
+          className={`absolute inset-0 flex items-center justify-center gap-2 transition-opacity duration-300 ${
+            isHovered ? "opacity-100" : "opacity-0"
+          }`}
+          style={{ backgroundColor: overlayBg }}
+        >
+          {[
+            { icon: FiEye, label: "Quick View" },
+            { icon: FiShoppingCart, label: "Add to Cart" },
+            { icon: FiHeart, label: "Wishlist" },
+          ].map(({ icon: Icon, label }) => (
+            <button
+              key={label}
+              className="p-2.5 rounded-full shadow-lg transition-colors duration-200"
+              style={{
+                backgroundColor: iconBg,
+                color: iconColor,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = iconHoverBg;
+                e.currentTarget.style.color = iconHoverColor;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = iconBg;
+                e.currentTarget.style.color = iconColor;
+              }}
+              aria-label={label}
+            >
+              <Icon className="w-4 h-4" />
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Content - flex-1 pushes bottom content down */}
-      <div className="p-4 space-y-1.5 flex flex-col flex-1">
+      {/* Content */}
+      <div className="p-4 space-y-2 flex flex-col flex-1">
         {/* Brand */}
         <p
-          className="text-xs font-semibold uppercase tracking-wider"
+          className="text-xs font-medium uppercase tracking-wider"
           style={{ color: brandColor }}
         >
           {brand}
         </p>
 
-        {/* Product Name - takes available space */}
+        {/* Product Name */}
         <h3
-          className="text-sm font-bold leading-tight line-clamp-2 flex-1"
+          className="text-sm font-semibold leading-tight line-clamp-2 flex-1"
           style={{ color: textPrimary }}
         >
           {productName}
         </h3>
 
-        {/* Price & View Button - sticks to bottom */}
+        {/* Price & View Button */}
         <div className="flex items-center justify-between pt-1 mt-auto">
-          <span className="text-lg font-bold" style={{ color: textPrimary }}>
-            {formatPrice(price)}
-          </span>
+          <div>
+            <span className="text-lg font-bold" style={{ color: textPrimary }}>
+              {formatPrice(basePrice)}
+            </span>
+          </div>
 
+          {/* View Button */}
           <button
             className="text-sm font-medium transition-colors hover:underline"
             style={{ color: brandColor }}

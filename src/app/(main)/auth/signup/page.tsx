@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
 import Link from "next/link";
 import { FaHeartbeat, FaEye, FaEyeSlash } from "react-icons/fa";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
+import toast from "react-hot-toast";
 
 export default function AdminSignupPage() {
-  const { theme } = useTheme();
   const [muted, setMuted] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
@@ -17,11 +17,12 @@ export default function AdminSignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     setMuted(true);
   }, []);
-  const isDark = theme === "dark";
+  const isDark = useMountedTheme();
 
   if (!muted) {
     return (
@@ -72,16 +73,34 @@ export default function AdminSignupPage() {
       </main>
     );
   }
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const { data, error } = await authClient.signUp.email({
-      name: fullName,
-      email: email,
-      password: password,
-      image: profilePhoto,
-    });
-    if (data) {
-      router.push("/");
+    setIsLoading(true);
+    try {
+      const { data, error } = await authClient.signUp.email({
+        name: fullName,
+        email,
+        password,
+        image: profilePhoto,
+        callbackURL: "/",
+      });
+
+      if (error) {
+        toast.error(error.message || "Failed to create your account.");
+        return;
+      }
+
+      if (data) {
+        toast.success(
+          "Account created successfully! Welcome to RAHA Surgical.",
+        );
+        router.push("/");
+        router.refresh();
+      }
+    } catch {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -297,19 +316,22 @@ export default function AdminSignupPage() {
             {/* Create Account Button */}
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full py-3 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-[1.02]"
               style={{
                 backgroundColor: primaryColor,
                 color: "#FFFFFF",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = primaryHover;
+                if (!isLoading) {
+                  e.currentTarget.style.backgroundColor = primaryHover;
+                }
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
-              Create Account
+              {isLoading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 

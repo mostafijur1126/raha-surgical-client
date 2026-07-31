@@ -26,3 +26,10 @@ export interface FilterState {
   priceRange: [number, number];
   inStockOnly: boolean;
 }
+
+export interface PricingTier {
+  price: string;
+  sku: string;
+  unitType: string;
+  unitsPerPackage: number;
+}

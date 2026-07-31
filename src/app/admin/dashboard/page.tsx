@@ -19,9 +19,9 @@ export default function AdminDashboardPage() {
   const textSecondary = isDark ? "#94A3B8" : "#475569";
 
   return (
-    <div>
+    <div className="p-4 sm:p-6">
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-8 ">
         <h1
           className="text-2xl md:text-3xl font-bold"
           style={{ color: textPrimary }}

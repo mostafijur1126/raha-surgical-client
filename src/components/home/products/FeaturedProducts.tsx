@@ -2,19 +2,17 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import ProductCard from "./ProductCard";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 import { useEffect, useState } from "react";
 import { getFeaturedProducts } from "@/lib/api/products";
+import ProductCard from "@/components/products/ProductCard";
 
 const FeaturedProducts = () => {
   const { isDark } = useMountedTheme();
-  const featuredProducts = [];
   const [product, setproduct] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
       const data = await getFeaturedProducts();
-      console.log(data.data);
       setproduct(data.data);
     };
     fetchData();

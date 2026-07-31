@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useTheme } from "next-themes";
 import Link from "next/link";
 import {
   FaHeartbeat,
@@ -11,26 +10,37 @@ import {
   FaLock,
 } from "react-icons/fa";
 import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
+import { useMountedTheme } from "@/hooks/useMountedTheme";
 
 export default function SignInPage() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const isDark = useMountedTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberDevice, setRememberDevice] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Sign in attempt:", { email, password, rememberDevice });
-    // TODO: Implement sign in logic
-    const { data, error } = await authClient.signIn.email({
-      email: email,
-      password: password,
-      rememberMe: true,
-      callbackURL: "/",
-    });
-    console.log(data, error);
+    setIsLoading(true);
+    try {
+      const { error } = await authClient.signIn.email({
+        email,
+        password,
+        rememberMe: rememberDevice,
+        callbackURL: "/",
+      });
+
+      if (error) {
+        toast.error(error.message || "Invalid email or password.");
+        return;
+      }
+
+      toast.success("Welcome back! Login successful.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Theme-aware colors
@@ -211,6 +221,7 @@ export default function SignInPage() {
             {/* Sign In Button */}
             <button
               type="submit"
+              disabled={isLoading}
               className="w-full py-3 rounded-lg font-medium shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center gap-2"
               style={{
                 backgroundColor: primaryColor,
@@ -223,7 +234,7 @@ export default function SignInPage() {
                 e.currentTarget.style.backgroundColor = primaryColor;
               }}
             >
-              Sign In
+              {isLoading ? "Signing In..." : "Sign In"}
               <FaArrowRight className="w-4 h-4" />
             </button>
           </form>
