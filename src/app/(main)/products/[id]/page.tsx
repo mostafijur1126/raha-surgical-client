@@ -1,18 +1,21 @@
+import { notFound } from "next/navigation";
 import { getProductById } from "@/lib/api/products";
+import ProductDetails from "./ProductDetails";
 
 interface ProductDetailsPageProps {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
-const productDetailsPage = async ({ params }: ProductDetailsPageProps) => {
+const ProductDetailsPage = async ({ params }: ProductDetailsPageProps) => {
   const { id } = await params;
 
   const response = await getProductById(id);
-  const data = response.data;
-  console.log(data);
-  return <div>Product ID: {id}</div>;
+
+  if (!response?.success || !response.data) {
+    notFound();
+  }
+
+  return <ProductDetails product={response.data} />;
 };
 
-export default productDetailsPage;
+export default ProductDetailsPage;

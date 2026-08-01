@@ -18,6 +18,7 @@ export interface Product {
   pricingTiers: PricingTier[];
   createdAt: string;
   updatedAt: string;
+  featured: boolean;
 }
 
 export interface FilterState {
