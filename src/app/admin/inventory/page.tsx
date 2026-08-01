@@ -46,7 +46,7 @@ const createTier = (
   sku: unitsPerPackage === 1 ? skuBase : `${skuBase}-BX${unitsPerPackage}`,
 });
 
-const UNIT_PRESETS = ["Single Piece", "Box of 10", "Box of 25", "Case of 50"];
+const UNIT_PRESETS = ["Single Piece", "Full Box"];
 
 export default function InventoryPage() {
   const [mounted, setMounted] = useState(false);
@@ -125,7 +125,7 @@ export default function InventoryPage() {
   };
 
   const addTier = () => {
-    setTiers((prev) => [...prev, createTier("Box of 10", 10, baseSku)]);
+    setTiers((prev) => [...prev, createTier("Full Box", 10, baseSku)]);
   };
 
   const removeTier = (id: string) => {
@@ -459,14 +459,14 @@ export default function InventoryPage() {
                           className="block text-[10px] font-semibold uppercase tracking-wider mb-1"
                           style={{ color: textMuted }}
                         >
-                          Price (USD)
+                          Price (BDT)
                         </label>
                         <div className="relative">
                           <span
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-sm"
                             style={{ color: textMuted }}
                           >
-                            $
+                            ৳
                           </span>
                           <input
                             type="number"

@@ -16,13 +16,13 @@ import {
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 import { toLabel } from "@/lib/format";
 import type { Product } from "@/lib/types";
+import OrderModal from "./OrderModal";
 
 type PurchaseMode = "single" | "box";
 type Tab = "description" | "specifications" | "reviews" | "shipping";
 
 export default function ProductDetails({ product }: { product: Product }) {
   const { isDark } = useMountedTheme();
-
   // ---- Gallery state ----
   const [activeImage, setActiveImage] = useState(0);
   const [isHoveringImage, setIsHoveringImage] = useState(false);
@@ -33,6 +33,9 @@ export default function ProductDetails({ product }: { product: Product }) {
 
   // ---- Tabs ----
   const [activeTab, setActiveTab] = useState<Tab>("description");
+
+  // ---- Checkout modal ----
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   const singleTier =
     product.pricingTiers.find((t) => t.unitsPerPackage === 1) ??
@@ -184,7 +187,7 @@ export default function ProductDetails({ product }: { product: Product }) {
                     />
                   </button>
                 ))}
-                {/* image thumbnails */}
+                {/* video thumbnail */}
               </div>
             )}
           </div>
@@ -221,11 +224,11 @@ export default function ProductDetails({ product }: { product: Product }) {
                   className="text-3xl font-bold"
                   style={{ color: textPrimary }}
                 >
-                  ${totalPrice.toFixed(2)}
+                  ৳{totalPrice.toFixed(2)}
                 </motion.span>
               </AnimatePresence>
               <span className="text-sm" style={{ color: textMuted }}>
-                (${unitPrice.toFixed(2)} /{" "}
+                (৳{unitPrice.toFixed(2)} /{" "}
                 {purchaseMode === "single" ? "unit" : "box"} × {quantity})
               </span>
             </div>
@@ -291,7 +294,10 @@ export default function ProductDetails({ product }: { product: Product }) {
             <div className="grid grid-cols-2 gap-3 mt-5">
               <motion.button
                 whileTap={{ scale: 0.97 }}
-                onClick={() => setPurchaseMode("single")}
+                onClick={() => {
+                  setPurchaseMode("single");
+                  setIsOrderModalOpen(true);
+                }}
                 className="py-3 rounded-lg text-sm font-semibold transition-colors duration-200 border-2"
                 style={{
                   backgroundColor:
@@ -305,7 +311,10 @@ export default function ProductDetails({ product }: { product: Product }) {
               </motion.button>
               <motion.button
                 whileTap={{ scale: 0.97 }}
-                onClick={() => setPurchaseMode("box")}
+                onClick={() => {
+                  setPurchaseMode("box");
+                  setIsOrderModalOpen(true);
+                }}
                 disabled={!boxTier}
                 className="py-3 rounded-lg text-sm font-semibold transition-colors duration-200 border-2 disabled:opacity-40 disabled:cursor-not-allowed"
                 style={{
@@ -477,6 +486,16 @@ export default function ProductDetails({ product }: { product: Product }) {
           </div>
         </div>
       </div>
+
+      <OrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        product={product}
+        activeTier={activeTier}
+        purchaseMode={purchaseMode}
+        quantity={quantity}
+        onQuantityChange={setQuantity}
+      />
     </div>
   );
 }
