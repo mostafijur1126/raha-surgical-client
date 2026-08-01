@@ -12,8 +12,8 @@ interface ProductFiltersProps {
   products: Product[];
 }
 
-function toLabel(slug: string) {
-  return slug
+function toLabel(cat: string) {
+  return cat
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
