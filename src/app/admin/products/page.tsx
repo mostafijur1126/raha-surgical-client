@@ -322,7 +322,7 @@ export default function ProductInventoryPage() {
               <FiFilter className="w-4 h-4" />
             </div>
             {/* ✅ fetched categories দিয়ে dynamic dropdown */}
-            <select
+            {/* <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="px-3 py-2 rounded-lg border text-sm outline-none"
@@ -334,7 +334,7 @@ export default function ProductInventoryPage() {
                   {toLabel(category)}
                 </option>
               ))}
-            </select>
+            </select> */}
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
