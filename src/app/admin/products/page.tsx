@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   FiDownload,
@@ -18,84 +18,58 @@ import {
   FiChevronRight as FiBreadcrumbSep,
 } from "react-icons/fi";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
+import { getCategories, getProducts } from "@/lib/api/products";
+import { getSinglePrice } from "@/lib/productHelpers";
+import { toLabel } from "@/lib/format";
+import type { Product } from "@/lib/types";
 
-// ✅ Static demo data — এখানে বসিয়ে আসল fetched inventory দিয়ে replace করুন
-interface InventoryRow {
-  id: string;
-  name: string;
-  subtitle: string;
-  image: string | null;
-  category: string;
-  sku: string;
-  price: number;
-  stock: number;
-  status: "In Stock" | "Low Stock" | "Out of Stock";
+type StockStatus = "In Stock" | "Low Stock" | "Out of Stock";
+
+// ⚠️ Threshold ধরে নেওয়া হলো — stockLevel <= 10 হলে "Low Stock" দেখাবে।
+// আপনার business logic অনুযায়ী সংখ্যাটা বদলে নিন।
+const LOW_STOCK_THRESHOLD = 10;
+
+function getStockStatus(stockLevel: number): StockStatus {
+  if (stockLevel <= 0) return "Out of Stock";
+  if (stockLevel <= LOW_STOCK_THRESHOLD) return "Low Stock";
+  return "In Stock";
 }
 
-const demoRows: InventoryRow[] = [
-  {
-    id: "1",
-    name: "Titanium Micro-Scalpel X1",
-    subtitle: "Precision Series",
-    image: null,
-    category: "Cardiovascular",
-    sku: "MED-992-TX",
-    price: 284.0,
-    stock: 42,
-    status: "In Stock",
-  },
-  {
-    id: "2",
-    name: "PulseStream HD Monitor",
-    subtitle: "Diagnostics",
-    image: null,
-    category: "Critical Care",
-    sku: "MON-840-HD",
-    price: 1250.0,
-    stock: 8,
-    status: "Low Stock",
-  },
-  {
-    id: "3",
-    name: "DuraShield Surgical Gown",
-    subtitle: "PPE Essentials",
-    image: null,
-    category: "General Surgery",
-    sku: "PPE-102-DG",
-    price: 42.5,
-    stock: 0,
-    status: "Out of Stock",
-  },
-  {
-    id: "4",
-    name: "Titanium Bone Screw 3.5mm",
-    subtitle: "Implants",
-    image: null,
-    category: "Orthopedic",
-    sku: "IMP-OS-35",
-    price: 112.0,
-    stock: 156,
-    status: "In Stock",
-  },
-];
-
-const CATEGORIES = [
-  "All Categories",
-  "Cardiovascular",
-  "Critical Care",
-  "General Surgery",
-  "Orthopedic",
-];
-const STATUSES = ["All Statuses", "In Stock", "Low Stock", "Out of Stock"];
+const STATUSES: StockStatus[] = ["In Stock", "Low Stock", "Out of Stock"];
 
 export default function ProductInventoryPage() {
   const { isDark } = useMountedTheme();
 
-  const [rows] = useState<InventoryRow[]>(demoRows);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // ✅ getProducts()/getCategories() সরাসরি array রিটার্ন করে (backend GET
+  // রুট দুটোও plain array পাঠায়) — তাই `.data` না লিখে সরাসরি সেট করা হচ্ছে
+  useEffect(() => {
+    const fetchAll = async () => {
+      setIsLoading(true);
+      try {
+        const [productsData, categoriesData] = await Promise.all([
+          getProducts(),
+          getCategories(),
+        ]);
+        console.log("getCategories() returned:", await getCategories());
+        setProducts(productsData.data);
+        setCategories(categoriesData.data);
+      } catch (err) {
+        console.error("Failed to load inventory:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAll();
+  }, []);
 
   // ---- Theme tokens (RAHA brand) ----
   const primary = isDark ? "#60A5FA" : "#025395";
@@ -111,10 +85,7 @@ export default function ProductInventoryPage() {
   const rowHoverBg = isDark ? "#243044" : "#F8FAFC";
   const badgeBg = isDark ? "rgba(96,165,250,0.15)" : "rgba(2,83,149,0.08)";
 
-  const statusStyles: Record<
-    InventoryRow["status"],
-    { bg: string; text: string }
-  > = {
+  const statusStyles: Record<StockStatus, { bg: string; text: string }> = {
     "In Stock": {
       bg: isDark ? "rgba(74,222,128,0.15)" : "#DCFCE7",
       text: isDark ? "#4ADE80" : "#16A34A",
@@ -129,32 +100,45 @@ export default function ProductInventoryPage() {
     },
   };
 
+  // ✅ Client-side filtering — আসল Product ফিল্ড (category, stockLevel) ব্যবহার করে
   const filteredRows = useMemo(() => {
-    return rows.filter((r) => {
-      if (categoryFilter !== "All Categories" && r.category !== categoryFilter)
+    return products.filter((p) => {
+      if (categoryFilter !== "All Categories" && p.category !== categoryFilter)
         return false;
-      if (statusFilter !== "All Statuses" && r.status !== statusFilter)
+      if (
+        statusFilter !== "All Statuses" &&
+        getStockStatus(p.stockLevel) !== statusFilter
+      )
         return false;
       return true;
     });
-  }, [rows, categoryFilter, statusFilter]);
+  }, [products, categoryFilter, statusFilter]);
 
-  // ---- Summary stats (static demo numbers — এগুলোও পরে real aggregate দিয়ে replace করুন) ----
-  const stats = {
-    totalProducts: 1429,
-    totalProductsChange: "+12%",
-    lowStockAlerts: 24,
-    outOfStock: 8,
-    totalInventoryValue: "৳4.2M",
+  // ✅ Stat card গুলো এখন আসল fetched products থেকে calculate হচ্ছে
+  const stats = useMemo(() => {
+    const totalProducts = products.length;
+    const lowStockAlerts = products.filter(
+      (p) => getStockStatus(p.stockLevel) === "Low Stock",
+    ).length;
+    const outOfStock = products.filter((p) => p.stockLevel <= 0).length;
+    const totalInventoryValue = products.reduce(
+      (sum, p) => sum + getSinglePrice(p) * p.stockLevel,
+      0,
+    );
+    return { totalProducts, lowStockAlerts, outOfStock, totalInventoryValue };
+  }, [products]);
+
+  const formatInventoryValue = (value: number) => {
+    if (value >= 1_000_000) return `৳${(value / 1_000_000).toFixed(1)}M`;
+    if (value >= 1_000) return `৳${(value / 1_000).toFixed(1)}K`;
+    return `৳${value.toFixed(0)}`;
   };
-
-  const totalPages = 143; // static — real pagination backend থেকে আসবে
 
   const toggleSelectAll = () => {
     if (selected.size === filteredRows.length) {
       setSelected(new Set());
     } else {
-      setSelected(new Set(filteredRows.map((r) => r.id)));
+      setSelected(new Set(filteredRows.map((p) => p._id)));
     }
   };
 
@@ -252,23 +236,12 @@ export default function ProductInventoryPage() {
             >
               Total Products
             </p>
-            <div className="flex items-center gap-2 mt-1.5">
-              <span
-                className="text-2xl font-bold"
-                style={{ color: textPrimary }}
-              >
-                {stats.totalProducts.toLocaleString()}
-              </span>
-              <span
-                className="text-[11px] font-semibold px-1.5 py-0.5 rounded"
-                style={{
-                  backgroundColor: statusStyles["In Stock"].bg,
-                  color: statusStyles["In Stock"].text,
-                }}
-              >
-                ↑ {stats.totalProductsChange}
-              </span>
-            </div>
+            <span
+              className="text-2xl font-bold block mt-1.5"
+              style={{ color: textPrimary }}
+            >
+              {stats.totalProducts.toLocaleString()}
+            </span>
           </div>
 
           <div
@@ -328,7 +301,7 @@ export default function ProductInventoryPage() {
             </p>
             <div className="flex items-center justify-between mt-1.5">
               <span className="text-2xl font-bold" style={{ color: primary }}>
-                {stats.totalInventoryValue}
+                {formatInventoryValue(stats.totalInventoryValue)}
               </span>
               <FiDollarSign className="w-5 h-5" style={{ color: primary }} />
             </div>
@@ -347,15 +320,17 @@ export default function ProductInventoryPage() {
             >
               <FiFilter className="w-4 h-4" />
             </div>
+            {/* ✅ fetched categories দিয়ে dynamic dropdown */}
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
               className="px-3 py-2 rounded-lg border text-sm outline-none"
               style={inputStyle}
             >
-              {CATEGORIES.map((c) => (
+              <option value="All Categories">All Categories</option>
+              {categories.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {toLabel(c)} ({c})
                 </option>
               ))}
             </select>
@@ -365,6 +340,7 @@ export default function ProductInventoryPage() {
               className="px-3 py-2 rounded-lg border text-sm outline-none"
               style={inputStyle}
             >
+              <option value="All Statuses">All Statuses</option>
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
                   {s}
@@ -480,7 +456,17 @@ export default function ProductInventoryPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredRows.length === 0 ? (
+                {isLoading ? (
+                  <tr>
+                    <td
+                      colSpan={8}
+                      className="px-4 py-10 text-center"
+                      style={{ color: textMuted }}
+                    >
+                      Loading inventory...
+                    </td>
+                  </tr>
+                ) : filteredRows.length === 0 ? (
                   <tr>
                     <td
                       colSpan={8}
@@ -491,135 +477,142 @@ export default function ProductInventoryPage() {
                     </td>
                   </tr>
                 ) : (
-                  filteredRows.map((row) => (
-                    <tr
-                      key={row.id}
-                      className="border-b last:border-b-0 transition-colors"
-                      style={{ borderColor: cardBorder }}
-                      onMouseEnter={(e) =>
-                        (e.currentTarget.style.backgroundColor = rowHoverBg)
-                      }
-                      onMouseLeave={(e) =>
-                        (e.currentTarget.style.backgroundColor = "transparent")
-                      }
-                    >
-                      <td className="px-4 py-3">
-                        <input
-                          type="checkbox"
-                          checked={selected.has(row.id)}
-                          onChange={() => toggleRow(row.id)}
-                          style={{ accentColor: primary }}
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className="w-10 h-10 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center"
-                            style={{ backgroundColor: badgeBg }}
-                          >
-                            {row.image ? (
-                              <img
-                                src={row.image}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <FiPackage
-                                className="w-4 h-4"
-                                style={{ color: primary }}
-                              />
-                            )}
-                          </div>
-                          <div className="min-w-0">
-                            <p
-                              className="font-semibold truncate"
-                              style={{ color: textPrimary }}
+                  filteredRows.map((product) => {
+                    const status = getStockStatus(product.stockLevel);
+                    const price = getSinglePrice(product);
+                    const image = product.imageUrls?.[0];
+
+                    return (
+                      <tr
+                        key={product._id}
+                        className="border-b last:border-b-0 transition-colors"
+                        style={{ borderColor: cardBorder }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.backgroundColor = rowHoverBg)
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.backgroundColor =
+                            "transparent")
+                        }
+                      >
+                        <td className="px-4 py-3">
+                          <input
+                            type="checkbox"
+                            checked={selected.has(product._id)}
+                            onChange={() => toggleRow(product._id)}
+                            style={{ accentColor: primary }}
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-10 h-10 rounded-lg flex-shrink-0 overflow-hidden flex items-center justify-center"
+                              style={{ backgroundColor: badgeBg }}
                             >
-                              {row.name}
-                            </p>
-                            <p
-                              className="text-xs truncate"
-                              style={{ color: textMuted }}
-                            >
-                              {row.subtitle}
-                            </p>
+                              {image ? (
+                                <img
+                                  src={image}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <FiPackage
+                                  className="w-4 h-4"
+                                  style={{ color: primary }}
+                                />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p
+                                className="font-semibold truncate"
+                                style={{ color: textPrimary }}
+                              >
+                                {product.productName}
+                              </p>
+                              <p
+                                className="text-xs truncate"
+                                style={{ color: textMuted }}
+                              >
+                                {product.brand}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td
-                        className="px-4 py-3"
-                        style={{ color: textSecondary }}
-                      >
-                        {row.category}
-                      </td>
-                      <td
-                        className="px-4 py-3 font-mono text-xs"
-                        style={{ color: textSecondary }}
-                      >
-                        {row.sku}
-                      </td>
-                      <td
-                        className="px-4 py-3 font-semibold"
-                        style={{ color: primary }}
-                      >
-                        ৳{row.price.toFixed(2)}
-                      </td>
-                      <td
-                        className="px-4 py-3"
-                        style={{ color: textSecondary }}
-                      >
-                        {row.stock} Units
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className="inline-block px-2.5 py-1 text-[11px] font-bold rounded-full uppercase tracking-wide"
-                          style={{
-                            backgroundColor: statusStyles[row.status].bg,
-                            color: statusStyles[row.status].text,
-                          }}
+                        </td>
+                        <td
+                          className="px-4 py-3"
+                          style={{ color: textSecondary }}
                         >
-                          {row.status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end gap-1">
-                          <button
-                            onClick={() => handleView(row.id)}
-                            className="p-2 rounded-lg transition-colors"
-                            style={{ color: textSecondary }}
-                            aria-label="View product"
-                            title="View"
+                          {toLabel(product.category)}
+                        </td>
+                        <td
+                          className="px-4 py-3 font-mono text-xs"
+                          style={{ color: textSecondary }}
+                        >
+                          {product.baseSku}
+                        </td>
+                        <td
+                          className="px-4 py-3 font-semibold"
+                          style={{ color: primary }}
+                        >
+                          ৳{price.toFixed(2)}
+                        </td>
+                        <td
+                          className="px-4 py-3"
+                          style={{ color: textSecondary }}
+                        >
+                          {product.stockLevel} Units
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className="inline-block px-2.5 py-1 text-[11px] font-bold rounded-full uppercase tracking-wide"
+                            style={{
+                              backgroundColor: statusStyles[status].bg,
+                              color: statusStyles[status].text,
+                            }}
                           >
-                            <FiEye className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleEdit(row.id)}
-                            className="p-2 rounded-lg transition-colors"
-                            style={{ color: primary }}
-                            aria-label="Edit product"
-                            title="Edit"
-                          >
-                            <FiEdit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(row.id)}
-                            className="p-2 rounded-lg transition-colors"
-                            style={{ color: isDark ? "#F87171" : "#DC2626" }}
-                            aria-label="Delete product"
-                            title="Delete"
-                          >
-                            <FiTrash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            {status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              onClick={() => handleView(product._id)}
+                              className="p-2 rounded-lg transition-colors"
+                              style={{ color: textSecondary }}
+                              aria-label="View product"
+                              title="View"
+                            >
+                              <FiEye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleEdit(product._id)}
+                              className="p-2 rounded-lg transition-colors"
+                              style={{ color: primary }}
+                              aria-label="Edit product"
+                              title="Edit"
+                            >
+                              <FiEdit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(product._id)}
+                              className="p-2 rounded-lg transition-colors"
+                              style={{ color: isDark ? "#F87171" : "#DC2626" }}
+                              aria-label="Delete product"
+                              title="Delete"
+                            >
+                              <FiTrash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
           </div>
 
-          {/* Footer / Pagination */}
+          {/* Footer */}
           <div
             className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t"
             style={{ borderColor: cardBorder }}
@@ -627,60 +620,17 @@ export default function ProductInventoryPage() {
             <p className="text-xs" style={{ color: textMuted }}>
               Showing{" "}
               <span className="font-semibold" style={{ color: textPrimary }}>
-                1 - {filteredRows.length}
+                {filteredRows.length}
               </span>{" "}
               of{" "}
               <span className="font-semibold" style={{ color: textPrimary }}>
-                {stats.totalProducts.toLocaleString()}
+                {stats.totalProducts}
               </span>{" "}
               products
             </p>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ borderColor: inputBorder, color: textSecondary }}
-              >
-                <FiChevronLeft className="w-4 h-4" />
-              </button>
-              {[1, 2, 3].map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setCurrentPage(p)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold transition-colors"
-                  style={{
-                    backgroundColor:
-                      currentPage === p ? primary : "transparent",
-                    color: currentPage === p ? "#FFFFFF" : textSecondary,
-                    border:
-                      currentPage === p ? "none" : `1px solid ${inputBorder}`,
-                  }}
-                >
-                  {p}
-                </button>
-              ))}
-              <span className="px-1 text-xs" style={{ color: textMuted }}>
-                …
-              </span>
-              <button
-                onClick={() => setCurrentPage(totalPages)}
-                className="px-2.5 h-8 flex items-center justify-center rounded-lg border text-xs font-semibold"
-                style={{ borderColor: inputBorder, color: textSecondary }}
-              >
-                {totalPages}
-              </button>
-              <button
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
-                disabled={currentPage === totalPages}
-                className="w-8 h-8 flex items-center justify-center rounded-lg border disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ borderColor: inputBorder, color: textSecondary }}
-              >
-                <FiChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+            {/* ⚠️ এখানে সব প্রোডাক্ট একবারে fetch হচ্ছে (client-side filtering, আগের
+                "সহজ পদ্ধতি" সিদ্ধান্ত অনুযায়ী), তাই pagination আপাতত সরানো হলো।
+                প্রোডাক্ট সংখ্যা অনেক বাড়লে backend pagination যোগ করে আবার বসাতে হবে। */}
           </div>
         </div>
       </div>
