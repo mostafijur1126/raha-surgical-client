@@ -41,8 +41,8 @@ export default function ProductInventoryPage() {
   const { isDark } = useMountedTheme();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
-  console.log("fetched categories:", categories);
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
+
   const [isLoading, setIsLoading] = useState(true);
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
