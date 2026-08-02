@@ -41,7 +41,8 @@ export default function ProductInventoryPage() {
   const { isDark } = useMountedTheme();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  console.log("fetched categories:", categories);
   const [isLoading, setIsLoading] = useState(true);
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -328,9 +329,9 @@ export default function ProductInventoryPage() {
               style={inputStyle}
             >
               <option value="All Categories">All Categories</option>
-              {categories.map((c) => (
-                <option key={c.slug} value={c.slug}>
-                  {toLabel(c.slug)} ({c.count})
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {toLabel(category)}
                 </option>
               ))}
             </select>
