@@ -1,15 +1,16 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import Link from "next/link";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 import { useEffect, useState } from "react";
 import { getFeaturedProducts } from "@/lib/api/products";
 import ProductCard from "@/components/products/ProductCard";
+import { Product } from "@/lib/types";
 
 const FeaturedProducts = () => {
   const { isDark } = useMountedTheme();
-  const [product, setproduct] = useState([]);
+  const [product, setproduct] = useState<Product[]>([]);
   useEffect(() => {
     const fetchData = async () => {
       const data = await getFeaturedProducts();
@@ -19,7 +20,7 @@ const FeaturedProducts = () => {
   }, []);
 
   // Animation variants
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -30,7 +31,7 @@ const FeaturedProducts = () => {
     },
   };
 
-  const childVariants = {
+  const childVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,

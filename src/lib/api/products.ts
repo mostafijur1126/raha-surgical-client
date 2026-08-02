@@ -6,6 +6,22 @@ export interface GetProductsResponse {
   data: Product[];
   message?: string;
 }
+export interface CategoryOption {
+  slug: string;
+  count: number;
+}
+
+export interface GetCategoriesResponse {
+  success: boolean;
+  data: CategoryOption[];
+  message?: string;
+}
+
+export interface GetProductByIdResponse {
+  success: boolean;
+  data: Product;
+  message?: string;
+}
 
 export const getProducts = (
   category?: string | null,
@@ -16,28 +32,14 @@ export const getProducts = (
   return serverFetch("/products");
 };
 
-export interface GetProductByIdResponse {
-  success: boolean;
-  data: Product;
-  message?: string;
-}
-
 export const getProductById = (id: string): Promise<GetProductByIdResponse> => {
   return serverFetch(`/products/${id}`);
 };
 
-export const getCategories = (): Promise<{
-  success: boolean;
-  data: string[];
-  message?: string;
-}> => {
+export const getCategories = (): Promise<GetCategoriesResponse> => {
   return serverFetch("/categories");
 };
 
-export const getFeaturedProducts = (): Promise<{
-  success: boolean;
-  data: Product[];
-  message?: string;
-}> => {
+export const getFeaturedProducts = (): Promise<GetProductsResponse> => {
   return serverFetch("/featured-products");
 };

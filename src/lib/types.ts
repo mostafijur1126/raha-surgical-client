@@ -34,3 +34,11 @@ export interface PricingTier {
   unitType: string;
   unitsPerPackage: number;
 }
+
+export interface SessionUser {
+  id: string;
+  name?: string;
+  email: string;
+  image?: string;
+  role?: string;
+}

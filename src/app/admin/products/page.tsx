@@ -19,6 +19,7 @@ import {
 } from "react-icons/fi";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 import { getCategories, getProducts } from "@/lib/api/products";
+import { CategoryOption } from "@/lib/api/products";
 import { getSinglePrice } from "@/lib/productHelpers";
 import { toLabel } from "@/lib/format";
 import type { Product } from "@/lib/types";
@@ -26,7 +27,6 @@ import type { Product } from "@/lib/types";
 type StockStatus = "In Stock" | "Low Stock" | "Out of Stock";
 
 // ⚠️ Threshold ধরে নেওয়া হলো — stockLevel <= 10 হলে "Low Stock" দেখাবে।
-// আপনার business logic অনুযায়ী সংখ্যাটা বদলে নিন।
 const LOW_STOCK_THRESHOLD = 10;
 
 function getStockStatus(stockLevel: number): StockStatus {
@@ -329,8 +329,8 @@ export default function ProductInventoryPage() {
             >
               <option value="All Categories">All Categories</option>
               {categories.map((c) => (
-                <option key={c} value={c}>
-                  {toLabel(c)} ({c})
+                <option key={c.slug} value={c.slug}>
+                  {toLabel(c.slug)} ({c.count})
                 </option>
               ))}
             </select>

@@ -7,9 +7,11 @@ import { FiChevronDown } from "react-icons/fi";
 import MegaMenu from "./MegaMenu";
 import { authClient } from "@/lib/auth-client";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
+import { CategoryOption } from "@/lib/api/products";
+import { SessionUser } from "@/lib/types";
 
 interface NavLinksProps {
-  categories: string[];
+  categories: CategoryOption[];
 }
 
 const NavLinks = ({ categories }: NavLinksProps) => {
@@ -20,9 +22,7 @@ const NavLinks = ({ categories }: NavLinksProps) => {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: session } = authClient.useSession();
-  const user = session?.user as
-    | (typeof session extends { user: infer U } ? U : never)
-    | undefined;
+  const user = session?.user as SessionUser | undefined;
 
   const handleMouseEnter = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);

@@ -7,11 +7,14 @@ import { useEffect, useState } from "react";
 import { FiChevronDown, FiX } from "react-icons/fi";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 import { authClient } from "@/lib/auth-client";
+import { SessionUser } from "@/lib/types";
+import { CategoryOption } from "@/lib/api/products";
+import { toLabel } from "@/lib/format";
 
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  categories: string[];
+  categories: CategoryOption[];
 }
 
 const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
@@ -20,9 +23,7 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
   const [productsOpen, setProductsOpen] = useState(false);
 
   const { data: session } = authClient.useSession();
-  const user = session?.user as
-    | (typeof session extends { user: infer U } ? U : never)
-    | undefined;
+  const user = session?.user as SessionUser | undefined;
 
   const isAdmin = user?.role === "admin";
 
@@ -136,11 +137,11 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
                       >
                         {categories.map((category) => (
                           <Link
-                            key={category}
+                            key={category.slug}
                             href={{
                               pathname: "/products",
                               query: {
-                                category,
+                                category: category.slug,
                               },
                             }}
                             className="block px-3 py-2 text-sm rounded-md transition-colors"
@@ -156,13 +157,7 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
                             }}
                             onClick={onClose}
                           >
-                            {category
-                              .split("-")
-                              .map(
-                                (word) =>
-                                  word.charAt(0).toUpperCase() + word.slice(1),
-                              )
-                              .join(" ")}
+                            {toLabel(category.slug)}{" "}
                           </Link>
                         ))}
                       </div>

@@ -40,11 +40,13 @@ export interface PlaceOrderResponse {
   message?: string;
 }
 
-export const addProduct = async (productData: Omit<Product, "id">) => {
+export const addProduct = async (
+  productData: Omit<Product, "_id" | "createdAt" | "updatedAt" | "featured">,
+) => {
   return serverMutation("/add-product", productData);
 };
 
-export const orderProduct = (
+export const orderProduct = async (
   payload: PlaceOrderPayload,
 ): Promise<PlaceOrderResponse> => {
   return serverMutation("/order-product", payload, "POST");

@@ -3,9 +3,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
+import { CategoryOption } from "@/lib/api/products";
 
 interface MegaMenuProps {
-  categories: string[];
+  categories: CategoryOption[];
   isOpen: boolean;
   onClose: () => void;
 }
@@ -47,11 +48,11 @@ const MegaMenu = ({ isOpen, categories, onClose }: MegaMenuProps) => {
                 <div key={colIdx} className="space-y-1.5">
                   {column.map((category) => (
                     <Link
-                      key={category}
+                      key={category.slug}
                       href={{
                         pathname: "/products",
                         query: {
-                          category,
+                          category: category.slug,
                         },
                       }}
                       onClick={onClose}
@@ -66,7 +67,7 @@ const MegaMenu = ({ isOpen, categories, onClose }: MegaMenuProps) => {
                         e.currentTarget.style.backgroundColor = "transparent";
                       }}
                     >
-                      {category
+                      {category.slug
                         .split("-")
                         .map(
                           (word) =>

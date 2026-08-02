@@ -17,7 +17,7 @@ const SearchBar = () => {
   const borderColor = isDark ? "#334155" : "#E2E8F0";
   const focusBorder = isDark ? "#60A5FA" : "#025395";
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const trimmed = query.trim();
     if (!trimmed) return;
