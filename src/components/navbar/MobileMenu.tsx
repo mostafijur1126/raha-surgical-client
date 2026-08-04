@@ -14,7 +14,7 @@ import { toLabel } from "@/lib/format";
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
-  categories: CategoryOption[];
+  categories: string[];
 }
 
 const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
@@ -137,11 +137,11 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
                       >
                         {categories.map((category) => (
                           <Link
-                            key={category.slug}
+                            key={category}
                             href={{
                               pathname: "/products",
                               query: {
-                                category: category.slug,
+                                category: category,
                               },
                             }}
                             className="block px-3 py-2 text-sm rounded-md transition-colors"
@@ -157,7 +157,7 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
                             }}
                             onClick={onClose}
                           >
-                            {toLabel(category.slug)}{" "}
+                            {toLabel(category)}{" "}
                           </Link>
                         ))}
                       </div>

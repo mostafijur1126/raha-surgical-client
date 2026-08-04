@@ -6,7 +6,7 @@ import { useMountedTheme } from "@/hooks/useMountedTheme";
 import { CategoryOption } from "@/lib/api/products";
 
 interface MegaMenuProps {
-  categories: CategoryOption[];
+  categories: string[];
   isOpen: boolean;
   onClose: () => void;
 }
@@ -48,11 +48,11 @@ const MegaMenu = ({ isOpen, categories, onClose }: MegaMenuProps) => {
                 <div key={colIdx} className="space-y-1.5">
                   {column.map((category) => (
                     <Link
-                      key={category.slug}
+                      key={category}
                       href={{
                         pathname: "/products",
                         query: {
-                          category: category.slug,
+                          category: category,
                         },
                       }}
                       onClick={onClose}
@@ -67,7 +67,7 @@ const MegaMenu = ({ isOpen, categories, onClose }: MegaMenuProps) => {
                         e.currentTarget.style.backgroundColor = "transparent";
                       }}
                     >
-                      {category.slug
+                      {category
                         .split("-")
                         .map(
                           (word) =>
