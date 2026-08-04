@@ -46,7 +46,7 @@ const ProfileDropdown = () => {
 
   if (!isLoggedIn) {
     return (
-      <Link href={"/auth/signup"}>
+      <Link href={"/auth/signin"}>
         <button
           className="text-white rounded-full px-6 py-2 text-sm font-medium shadow-sm hover:shadow-md transition-all duration-200"
           style={{ backgroundColor: primary }}

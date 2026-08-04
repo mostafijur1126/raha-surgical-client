@@ -23,7 +23,6 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
 
   const { data: session } = authClient.useSession();
   const user = session?.user as SessionUser | undefined;
-
   const isAdmin = user?.role === "admin";
 
   const baseLink = [
@@ -36,11 +35,9 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
     : baseLink;
 
   const bg = isDark ? "#1E293B" : "#FFFFFF";
-  const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
   const textSecondary = isDark ? "#94A3B8" : "#475569";
   const hoverBg = isDark ? "#2D3748" : "#EFF6FF";
   const hoverText = isDark ? "#60A5FA" : "#025395";
-  const borderColor = isDark ? "#334155" : "#E2E8F0";
   const overlayBg = isDark ? "rgba(15,23,42,0.8)" : "rgba(0,0,0,0.5)";
 
   useEffect(() => {
@@ -59,6 +56,7 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -69,14 +67,16 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
             onClick={onClose}
           />
 
+          {/* Drawer - এখন বাম দিক থেকে স্লাইড হবে */}
           <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
+            initial={{ x: "-100%" }} // বাম থেকে শুরু
+            animate={{ x: 0 }} // পূর্ণ দৃশ্যমান
+            exit={{ x: "-100%" }} // বামে চলে যাবে
             transition={{ type: "tween", duration: 0.3, ease: "easeInOut" }}
-            className="fixed top-0 right-0 w-full max-w-sm h-full z-50 shadow-xl p-6 overflow-y-auto"
+            className="fixed top-0 left-0 w-full max-w-sm h-full z-50 shadow-xl p-6 overflow-y-auto"
             style={{ backgroundColor: bg }}
           >
+            {/* ক্লোজ বাটন – ডান দিকে থাকবে */}
             <div className="flex justify-end">
               <button
                 onClick={onClose}
@@ -94,14 +94,42 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
               </button>
             </div>
 
+            {/* মেনু আইটেম */}
             <div className="mt-4 space-y-2">
+              {links.map((link) => {
+                const isActive = pathname === link.href;
+                return (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    className="block px-4 py-3 text-base font-medium rounded-lg transition-colors"
+                    style={{
+                      color: isActive ? hoverText : textSecondary,
+                      backgroundColor: isActive ? hoverBg : "transparent",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.color = hoverText;
+                        e.currentTarget.style.backgroundColor = hoverBg;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.color = textSecondary;
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }
+                    }}
+                    onClick={onClose}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
               <div>
                 <button
                   onClick={() => setProductsOpen(!productsOpen)}
                   className="flex items-center justify-between w-full px-4 py-3 text-left text-base font-medium rounded-lg transition-colors"
-                  style={{
-                    color: textSecondary,
-                  }}
+                  style={{ color: textSecondary }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = hoverText;
                     e.currentTarget.style.backgroundColor = hoverBg;
@@ -139,9 +167,7 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
                             key={category}
                             href={{
                               pathname: "/products",
-                              query: {
-                                category: category,
-                              },
+                              query: { category },
                             }}
                             className="block px-3 py-2 text-sm rounded-md transition-colors"
                             style={{ color: textSecondary }}
@@ -156,7 +182,7 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
                             }}
                             onClick={onClose}
                           >
-                            {toLabel(category)}{" "}
+                            {toLabel(category)}
                           </Link>
                         ))}
                       </div>
@@ -164,36 +190,6 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
                   )}
                 </AnimatePresence>
               </div>
-
-              {links.map((link) => {
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className="block px-4 py-3 text-base font-medium rounded-lg transition-colors"
-                    style={{
-                      color: isActive ? hoverText : textSecondary,
-                      backgroundColor: isActive ? hoverBg : "transparent",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.color = hoverText;
-                        e.currentTarget.style.backgroundColor = hoverBg;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.color = textSecondary;
-                        e.currentTarget.style.backgroundColor = "transparent";
-                      }
-                    }}
-                    onClick={onClose}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
             </div>
           </motion.div>
         </>

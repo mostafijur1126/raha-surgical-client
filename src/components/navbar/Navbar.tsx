@@ -14,6 +14,7 @@ import { getCategories } from "@/lib/api/products";
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showSearch, setShowSearch] = useState(true);
 
   const { isDark } = useMountedTheme();
   const [categories, setCategories] = useState<string[]>([]);
@@ -33,8 +34,18 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
+    let lastScrollY = 0;
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      const currentScrollY = window.scrollY;
+      setIsScrolled(currentScrollY > 10);
+
+      if (currentScrollY < lastScrollY || currentScrollY < 30) {
+        setShowSearch(true);
+      } else {
+        setShowSearch(false);
+      }
+      lastScrollY = currentScrollY;
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -67,43 +78,46 @@ const Navbar = () => {
         }}
       >
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex relative items-center justify-between h-16 md:h-20">
-            <div className="flex-shrink-0">
-              <Logo />
-            </div>
-
-            <div className="hidden md:flex flex-1 justify-center">
-              <SearchBar />
-            </div>
-
-            <div className="flex items-center gap-2 md:gap-4">
-              <NavLinks categories={categories} />
-              <ThemeToggle />
-
-              <button
-                onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 rounded-full transition-colors"
-                style={{
-                  color: isDark ? "#E2E8F0" : "#334155",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDark
-                    ? "#1E293B"
-                    : "#F1F5F9";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-                aria-label="Open menu"
-              >
+          <div className="flex relative w-full ">
+            {/* mobile */}
+            <div className="flex lg:hidden w-full items-center justify-between h-16">
+              {/* Left */}
+              <button onClick={() => setMobileMenuOpen(true)} className="p-2">
                 <FiMenu className="w-6 h-6" />
               </button>
 
-              <ProfileDropdown />
+              {/* Center */}
+              <Logo />
+
+              {/* Right */}
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <ProfileDropdown />
+              </div>
+            </div>
+            {/* daxtop */}
+            <div className="hidden lg:flex w-full items-center justify-between h-20">
+              <Logo />
+
+              <div className="flex-1 flex justify-center">
+                <SearchBar />
+              </div>
+
+              <div className="flex items-center gap-4">
+                <NavLinks categories={categories} />
+                <ThemeToggle />
+                <ProfileDropdown />
+              </div>
             </div>
           </div>
 
-          <div className="md:hidden py-2 pb-3">
+          <div
+            className={`lg:hidden overflow-hidden transition-all duration-300 ${
+              showSearch
+                ? "max-h-20 opacity-100 py-2 pb-3"
+                : "max-h-0 opacity-0 py-0"
+            }`}
+          >
             <SearchBar />
           </div>
         </div>
