@@ -57,7 +57,7 @@ const ProfileDropdown = () => {
             (e.currentTarget.style.backgroundColor = primary)
           }
         >
-          Login / Register
+          Login
         </button>
       </Link>
     );
