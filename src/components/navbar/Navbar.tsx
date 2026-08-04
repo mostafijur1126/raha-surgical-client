@@ -18,7 +18,6 @@ const Navbar = () => {
 
   const { isDark } = useMountedTheme();
   const [categories, setCategories] = useState<string[]>([]);
-  console.log(categories);
 
   useEffect(() => {
     const fetchCategories = async () => {

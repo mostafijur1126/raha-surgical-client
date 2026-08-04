@@ -2,84 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  FiX,
-  FiMinus,
-  FiPlus,
-  FiShield,
-  FiTruck,
-  FiCheckCircle,
-} from "react-icons/fi";
+import { FiX, FiMinus, FiPlus, FiTruck, FiCheckCircle } from "react-icons/fi";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 import type { Product, PricingTier } from "@/lib/types";
 import { orderProduct } from "@/lib/action/product";
-
-//District dropdown
-const BD_DISTRICTS = [
-  "Bagerhat",
-  "Bandarban",
-  "Barguna",
-  "Barishal",
-  "Bhola",
-  "Bogura",
-  "Brahmanbaria",
-  "Chandpur",
-  "Chattogram",
-  "Chuadanga",
-  "Cox's Bazar",
-  "Cumilla",
-  "Dhaka",
-  "Dinajpur",
-  "Faridpur",
-  "Feni",
-  "Gaibandha",
-  "Gazipur",
-  "Gopalganj",
-  "Habiganj",
-  "Jamalpur",
-  "Jashore",
-  "Jhalokati",
-  "Jhenaidah",
-  "Joypurhat",
-  "Khagrachhari",
-  "Khulna",
-  "Kishoreganj",
-  "Kurigram",
-  "Kushtia",
-  "Lakshmipur",
-  "Lalmonirhat",
-  "Madaripur",
-  "Magura",
-  "Manikganj",
-  "Meherpur",
-  "Moulvibazar",
-  "Munshiganj",
-  "Mymensingh",
-  "Naogaon",
-  "Narail",
-  "Narayanganj",
-  "Narsingdi",
-  "Natore",
-  "Netrokona",
-  "Nilphamari",
-  "Noakhali",
-  "Pabna",
-  "Panchagarh",
-  "Patuakhali",
-  "Pirojpur",
-  "Rajbari",
-  "Rajshahi",
-  "Rangamati",
-  "Rangpur",
-  "Satkhira",
-  "Shariatpur",
-  "Sherpur",
-  "Sirajganj",
-  "Sunamganj",
-  "Sylhet",
-  "Tangail",
-  "Thakurgaon",
-];
 
 interface OrderModalProps {
   isOpen: boolean;
@@ -91,14 +17,11 @@ interface OrderModalProps {
   onQuantityChange: (qty: number) => void;
 }
 
-type PaymentMethod = "online" | "cod";
-
 export default function OrderModal({
   isOpen,
   onClose,
   product,
   activeTier,
-  purchaseMode,
   quantity,
   onQuantityChange,
 }: OrderModalProps) {
@@ -106,12 +29,7 @@ export default function OrderModal({
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
   const [streetAddress, setStreetAddress] = useState("");
-  const [district, setDistrict] = useState("");
-  const [postcode, setPostcode] = useState("");
-  const [orderNotes, setOrderNotes] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("online");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderPlaced, setIsOrderPlaced] = useState(false);
@@ -125,8 +43,10 @@ export default function OrderModal({
 
   const unitPrice = Number(activeTier.price);
   const subtotal = unitPrice * quantity;
+  const deliveryCharge = 0; // free delivery for now, can be customised later
+  const total = subtotal + deliveryCharge;
 
-  // ---- Theme tokens (RAHA brand) ----
+  // ---- Theme tokens ----
   const primary = isDark ? "#60A5FA" : "#025395";
   const primaryHover = isDark ? "#3B82F6" : "#01447A";
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
@@ -152,7 +72,9 @@ export default function OrderModal({
       >,
     ) => {
       e.currentTarget.style.borderColor = primary;
-      e.currentTarget.style.boxShadow = `0 0 0 2px ${isDark ? "rgba(96,165,250,0.2)" : "rgba(2,83,149,0.15)"}`;
+      e.currentTarget.style.boxShadow = `0 0 0 2px ${
+        isDark ? "rgba(96,165,250,0.2)" : "rgba(2,83,149,0.15)"
+      }`;
     },
     onBlur: (
       e: React.FocusEvent<
@@ -165,11 +87,7 @@ export default function OrderModal({
   };
 
   const isFormValid =
-    fullName.trim() &&
-    phone.trim() &&
-    streetAddress.trim() &&
-    district &&
-    agreedToTerms;
+    fullName.trim() && phone.trim() && streetAddress.trim() && agreedToTerms;
 
   const handlePlaceOrder = async () => {
     if (!isFormValid) return;
@@ -189,13 +107,10 @@ export default function OrderModal({
       customer: {
         fullName,
         phone,
-        email: email || null,
         streetAddress,
-        district,
-        postcode: postcode || null,
       },
-      orderNotes: orderNotes || null,
-      paymentMethod,
+      orderNotes: null,
+      paymentMethod: "cod", // only COD
     };
 
     await orderProduct(order);
@@ -224,7 +139,9 @@ export default function OrderModal({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 12 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className={`w-full ${isOrderPlaced ? "max-w-md" : "max-w-4xl"} max-h-[90vh] rounded-2xl overflow-hidden flex flex-col transition-[max-width] duration-200`}
+              className={`w-full ${
+                isOrderPlaced ? "max-w-md" : "max-w-2xl"
+              } max-h-[90vh] rounded-2xl overflow-hidden flex flex-col transition-[max-width] duration-200`}
               style={{ backgroundColor: cardBg }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -276,19 +193,9 @@ export default function OrderModal({
                     Order Placed Successfully
                   </h3>
                   <p className="text-sm mt-2" style={{ color: textSecondary }}>
-                    {paymentMethod === "cod" ? (
-                      <>
-                        Thank you, {fullName.split(" ")[0]}. Your order has been
-                        received. Please wait — RAHA Surgical will contact you
-                        shortly to confirm delivery.
-                      </>
-                    ) : (
-                      <>
-                        Thank you, {fullName.split(" ")[0]}. We&apos;ve received
-                        your order and will contact you shortly to confirm
-                        delivery.
-                      </>
-                    )}
+                    Thank you, {fullName.split(" ")[0]}. We&apos;ve received
+                    your order. RAHA Surgical will contact you shortly to
+                    confirm delivery.
                   </p>
 
                   <div
@@ -317,31 +224,25 @@ export default function OrderModal({
                         {quantity}
                       </span>
                     </div>
-                    <div
-                      className="flex items-center justify-between text-sm pt-2 border-t"
-                      style={{ borderColor: cardBorder }}
-                    >
+                    <div className="flex items-center justify-between text-sm pt-2 border-t">
                       <span
-                        className="font-semibold"
-                        style={{ color: textPrimary }}
+                        style={{ color: textMuted, borderColor: cardBorder }}
                       >
-                        {paymentMethod === "cod" ? "Amount Due" : "Total Paid"}
+                        Amount to pay on delivery
                       </span>
                       <span className="font-bold" style={{ color: primary }}>
-                        ৳{subtotal.toFixed(2)}
+                        ৳{total.toFixed(2)}
                       </span>
                     </div>
                   </div>
 
-                  {paymentMethod === "cod" && (
-                    <p
-                      className="w-full text-xs rounded-lg p-3 mt-3"
-                      style={{ backgroundColor: badgeBgSoft, color: primary }}
-                    >
-                      Cash on Delivery — you&apos;ll pay this amount to the
-                      courier when the product reaches your hands.
-                    </p>
-                  )}
+                  <p
+                    className="w-full text-xs rounded-lg p-3 mt-3"
+                    style={{ backgroundColor: badgeBgSoft, color: primary }}
+                  >
+                    Cash on Delivery — you&apos;ll pay the full amount to the
+                    courier when your order arrives.
+                  </p>
 
                   <button
                     onClick={onClose}
@@ -358,190 +259,27 @@ export default function OrderModal({
                   </button>
                 </div>
               ) : (
-                <div className="overflow-y-auto grid grid-cols-1 md:grid-cols-2">
-                  {/* ================= LEFT (desktop) / BOTTOM (mobile): Billing & Shipping ================= */}
-                  <div className="order-2 md:order-1 p-6 space-y-4">
+                /* ================= CHECKOUT FORM ================= */
+                <div className="overflow-y-auto p-6 space-y-6">
+                  {/* 1. Order Summary */}
+                  <section>
                     <h3
-                      className="text-sm font-bold uppercase tracking-wider"
+                      className="text-sm font-bold uppercase tracking-wider mb-3"
                       style={{ color: textPrimary }}
                     >
-                      Billing &amp; Shipping
+                      Order Summary
                     </h3>
-
-                    <div>
-                      <label
-                        className="block text-xs font-semibold mb-1.5"
-                        style={{ color: textSecondary }}
-                      >
-                        Full Name <span style={{ color: "#DC2626" }}>*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-lg border outline-none transition-all text-sm"
-                        style={inputStyle}
-                        {...focusHandlers}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        className="block text-xs font-semibold mb-1.5"
-                        style={{ color: textSecondary }}
-                      >
-                        Phone Number <span style={{ color: "#DC2626" }}>*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        placeholder="01XXXXXXXXX"
-                        className="w-full px-3.5 py-2.5 rounded-lg border outline-none transition-all text-sm"
-                        style={inputStyle}
-                        {...focusHandlers}
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        className="block text-xs font-semibold mb-1.5"
-                        style={{ color: textSecondary }}
-                      >
-                        Email{" "}
-                        <span
-                          className="font-normal"
-                          style={{ color: textMuted }}
-                        >
-                          (optional)
-                        </span>
-                      </label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-lg border outline-none transition-all text-sm"
-                        style={inputStyle}
-                        {...focusHandlers}
-                      />
-                    </div>
-
-                    <div>
-                      <label
-                        className="block text-xs font-semibold mb-1.5"
-                        style={{ color: textSecondary }}
-                      >
-                        Street Address{" "}
-                        <span style={{ color: "#DC2626" }}>*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={streetAddress}
-                        onChange={(e) => setStreetAddress(e.target.value)}
-                        placeholder="House number and street name"
-                        className="w-full px-3.5 py-2.5 rounded-lg border outline-none transition-all text-sm"
-                        style={inputStyle}
-                        {...focusHandlers}
-                        required
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label
-                          className="block text-xs font-semibold mb-1.5"
-                          style={{ color: textSecondary }}
-                        >
-                          District <span style={{ color: "#DC2626" }}>*</span>
-                        </label>
-                        <select
-                          value={district}
-                          onChange={(e) => setDistrict(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-lg border outline-none transition-all text-sm"
-                          style={inputStyle}
-                          {...focusHandlers}
-                          required
-                        >
-                          <option value="">Select an option...</option>
-                          {BD_DISTRICTS.map((d) => (
-                            <option key={d} value={d}>
-                              {d}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label
-                          className="block text-xs font-semibold mb-1.5"
-                          style={{ color: textSecondary }}
-                        >
-                          Postcode / ZIP{" "}
-                          <span
-                            className="font-normal"
-                            style={{ color: textMuted }}
-                          >
-                            (optional)
-                          </span>
-                        </label>
-                        <input
-                          type="text"
-                          value={postcode}
-                          onChange={(e) => setPostcode(e.target.value)}
-                          className="w-full px-3.5 py-2.5 rounded-lg border outline-none transition-all text-sm"
-                          style={inputStyle}
-                          {...focusHandlers}
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label
-                        className="block text-xs font-semibold mb-1.5"
-                        style={{ color: textSecondary }}
-                      >
-                        Order Notes{" "}
-                        <span
-                          className="font-normal"
-                          style={{ color: textMuted }}
-                        >
-                          (optional)
-                        </span>
-                      </label>
-                      <textarea
-                        value={orderNotes}
-                        onChange={(e) => setOrderNotes(e.target.value)}
-                        rows={3}
-                        placeholder="Notes about your order, e.g. special notes for delivery."
-                        className="w-full px-3.5 py-2.5 rounded-lg border outline-none transition-all text-sm resize-none"
-                        style={inputStyle}
-                        {...focusHandlers}
-                      />
-                    </div>
-                  </div>
-
-                  {/* ================= RIGHT (desktop) / TOP (mobile): Order Summary ================= */}
-                  <div
-                    className="order-1 md:order-2 p-6 space-y-4"
-                    style={{ backgroundColor: panelBg }}
-                  >
-                    <h3
-                      className="text-sm font-bold uppercase tracking-wider"
-                      style={{ color: textPrimary }}
-                    >
-                      Your Order
-                    </h3>
-
-                    {/* Product row */}
                     <div
-                      className="flex items-center gap-3 pb-4 border-b"
-                      style={{ borderColor: cardBorder }}
+                      className="flex items-start gap-4 p-3 rounded-xl border"
+                      style={{
+                        backgroundColor: panelBg,
+                        borderColor: cardBorder,
+                      }}
                     >
                       <img
                         src={product.imageUrls[0]}
                         alt={product.productName}
-                        className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
+                        className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
                         style={{ border: `1px solid ${cardBorder}` }}
                       />
                       <div className="flex-1 min-w-0">
@@ -585,101 +323,168 @@ export default function OrderModal({
                           </button>
                         </div>
                       </div>
-                      <p
-                        className="text-sm font-semibold flex-shrink-0"
-                        style={{ color: textPrimary }}
-                      >
-                        ৳{subtotal.toFixed(2)}
-                      </p>
-                    </div>
-
-                    {/* Totals */}
-                    <div className="flex items-center justify-between text-sm">
-                      <span style={{ color: textSecondary }}>Subtotal</span>
-                      <span
-                        className="font-semibold"
-                        style={{ color: textPrimary }}
-                      >
-                        ৳{subtotal.toFixed(2)}
-                      </span>
-                    </div>
-                    <div
-                      className="flex items-center justify-between text-sm pb-4 border-b"
-                      style={{ borderColor: cardBorder }}
-                    >
-                      <span style={{ color: textSecondary }}>Shipment</span>
-                      <span className="text-xs" style={{ color: textMuted }}>
-                        Enter your address to view shipping options.
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span
-                        className="text-sm font-bold"
-                        style={{ color: textPrimary }}
-                      >
-                        Total
-                      </span>
-                      <span
-                        className="text-lg font-bold"
-                        style={{ color: primary }}
-                      >
-                        ৳{subtotal.toFixed(2)}
-                      </span>
-                    </div>
-
-                    {/* Payment method */}
-                    <div className="pt-4 space-y-3">
-                      <label
-                        className="flex items-center gap-2 text-sm cursor-pointer"
-                        style={{ color: textPrimary }}
-                      >
-                        <input
-                          type="radio"
-                          checked={paymentMethod === "online"}
-                          onChange={() => setPaymentMethod("online")}
-                          style={{ accentColor: primary }}
-                        />
-                        <FiShield
-                          className="w-4 h-4"
-                          style={{ color: primary }}
-                        />
-                        Secured Online Payment
-                      </label>
-                      {paymentMethod === "online" && (
+                      <div className="text-right flex-shrink-0">
                         <p
-                          className="text-xs rounded-lg p-3"
-                          style={{
-                            backgroundColor: cardBg,
-                            color: textMuted,
-                            border: `1px solid ${cardBorder}`,
-                          }}
+                          className="text-sm font-semibold"
+                          style={{ color: textPrimary }}
                         >
-                          Pay securely by Credit or Debit card, or mobile
-                          banking, through our secure payment gateway.
+                          ৳{subtotal.toFixed(2)}
                         </p>
-                      )}
+                        <p className="text-xs" style={{ color: textMuted }}>
+                          (unit: ৳{unitPrice.toFixed(2)})
+                        </p>
+                      </div>
+                    </div>
+                  </section>
 
-                      <label
-                        className="flex items-center gap-2 text-sm cursor-pointer"
-                        style={{ color: textPrimary }}
+                  {/* 2. Amount Summary */}
+                  <section>
+                    <h3
+                      className="text-sm font-bold uppercase tracking-wider mb-3"
+                      style={{ color: textPrimary }}
+                    >
+                      Amount Summary
+                    </h3>
+                    <div
+                      className="rounded-xl border p-3 space-y-1.5"
+                      style={{
+                        backgroundColor: panelBg,
+                        borderColor: cardBorder,
+                      }}
+                    >
+                      <div className="flex items-center justify-between text-sm">
+                        <span style={{ color: textSecondary }}>Subtotal</span>
+                        <span style={{ color: textPrimary }}>
+                          ৳{subtotal.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span style={{ color: textSecondary }}>
+                          Delivery Charge
+                        </span>
+                        <span style={{ color: textPrimary }}>
+                          ৳{deliveryCharge.toFixed(2)}
+                        </span>
+                      </div>
+                      <div
+                        className="flex items-center justify-between text-base font-bold pt-1.5 border-t"
+                        style={{ borderColor: cardBorder }}
                       >
+                        <span style={{ color: textPrimary }}>Total</span>
+                        <span style={{ color: primary }}>
+                          ৳{total.toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* 3. Billing Address */}
+                  <section>
+                    <h3
+                      className="text-sm font-bold uppercase tracking-wider mb-3"
+                      style={{ color: textPrimary }}
+                    >
+                      Billing Address
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label
+                          className="block text-xs font-semibold mb-1.5"
+                          style={{ color: textSecondary }}
+                        >
+                          Full Name <span style={{ color: "#DC2626" }}>*</span>
+                        </label>
                         <input
-                          type="radio"
-                          checked={paymentMethod === "cod"}
-                          onChange={() => setPaymentMethod("cod")}
-                          style={{ accentColor: primary }}
+                          type="text"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          className="w-full px-3.5 py-2.5 rounded-lg border outline-none transition-all text-sm"
+                          style={inputStyle}
+                          {...focusHandlers}
+                          required
                         />
-                        <FiTruck
-                          className="w-4 h-4"
-                          style={{ color: primary }}
+                      </div>
+                      <div>
+                        <label
+                          className="block text-xs font-semibold mb-1.5"
+                          style={{ color: textSecondary }}
+                        >
+                          Phone Number{" "}
+                          <span style={{ color: "#DC2626" }}>*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="01XXXXXXXXX"
+                          className="w-full px-3.5 py-2.5 rounded-lg border outline-none transition-all text-sm"
+                          style={inputStyle}
+                          {...focusHandlers}
+                          required
                         />
-                        Cash on Delivery
-                      </label>
+                      </div>
+                      <div>
+                        <label
+                          className="block text-xs font-semibold mb-1.5"
+                          style={{ color: textSecondary }}
+                        >
+                          Delivery Location{" "}
+                          <span style={{ color: "#DC2626" }}>*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={streetAddress}
+                          onChange={(e) => setStreetAddress(e.target.value)}
+                          placeholder="House number, street, area"
+                          className="w-full px-3.5 py-2.5 rounded-lg border outline-none transition-all text-sm"
+                          style={inputStyle}
+                          {...focusHandlers}
+                          required
+                        />
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* 4. Place Order */}
+                  <section>
+                    <h3
+                      className="text-sm font-bold uppercase tracking-wider mb-3"
+                      style={{ color: textPrimary }}
+                    >
+                      Payment &amp; Place Order
+                    </h3>
+
+                    <div
+                      className="rounded-xl border p-4 mb-4 flex items-start gap-3"
+                      style={{
+                        backgroundColor: panelBg,
+                        borderColor: cardBorder,
+                      }}
+                    >
+                      <FiTruck
+                        className="w-5 h-5 mt-0.5 flex-shrink-0"
+                        style={{ color: primary }}
+                      />
+                      <div>
+                        <p
+                          className="text-sm font-medium"
+                          style={{ color: textPrimary }}
+                        >
+                          Cash on Delivery
+                        </p>
+                        <p
+                          className="text-xs mt-0.5"
+                          style={{ color: textSecondary }}
+                        >
+                          You only need to pay the delivery charge now. The
+                          remaining product amount will be collected upon
+                          delivery.
+                        </p>
+                      </div>
                     </div>
 
-                    {/* Terms */}
                     <label
-                      className="flex items-start gap-2 text-xs pt-2 cursor-pointer"
+                      className="flex items-start gap-2 text-xs cursor-pointer"
                       style={{ color: textSecondary }}
                     >
                       <input
@@ -696,11 +501,10 @@ export default function OrderModal({
                       <span style={{ color: "#DC2626" }}>*</span>
                     </label>
 
-                    {/* Place order */}
                     <button
                       onClick={handlePlaceOrder}
                       disabled={!isFormValid || isSubmitting}
-                      className="w-full py-3.5 rounded-lg text-sm font-bold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full mt-4 py-3.5 rounded-lg text-sm font-bold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       style={{ backgroundColor: primary }}
                       onMouseEnter={(e) => {
                         if (isFormValid)
@@ -713,7 +517,7 @@ export default function OrderModal({
                     >
                       {isSubmitting ? "Placing order..." : "PLACE ORDER"}
                     </button>
-                  </div>
+                  </section>
                 </div>
               )}
             </motion.div>
