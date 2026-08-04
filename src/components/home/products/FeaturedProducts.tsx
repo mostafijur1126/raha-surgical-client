@@ -75,7 +75,7 @@ const FeaturedProducts = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6"
         >
           {product.map((product) => (
             <motion.div key={product._id} variants={childVariants}>
