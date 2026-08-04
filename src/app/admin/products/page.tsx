@@ -19,7 +19,7 @@ import {
 } from "react-icons/fi";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 import { getCategories, getProducts } from "@/lib/api/products";
-import { CategoryOption } from "@/lib/api/products";
+
 import { getSinglePrice } from "@/lib/productHelpers";
 import { toLabel } from "@/lib/format";
 import type { Product } from "@/lib/types";
@@ -41,7 +41,7 @@ export default function ProductInventoryPage() {
   const { isDark } = useMountedTheme();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
 
   const [isLoading, setIsLoading] = useState(true);
 
