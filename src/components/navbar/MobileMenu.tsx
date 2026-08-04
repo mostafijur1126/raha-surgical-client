@@ -8,7 +8,6 @@ import { FiChevronDown, FiX } from "react-icons/fi";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 import { authClient } from "@/lib/auth-client";
 import { SessionUser } from "@/lib/types";
-import { CategoryOption } from "@/lib/api/products";
 import { toLabel } from "@/lib/format";
 
 interface MobileMenuProps {

@@ -9,14 +9,15 @@ import ProfileDropdown from "./ProfileDropdown";
 import MobileMenu from "./MobileMenu";
 import ThemeToggle from "../theme-toggle/ThemeToggle";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
-import { CategoryOption, getCategories } from "@/lib/api/products";
+import { getCategories } from "@/lib/api/products";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const { isDark } = useMountedTheme();
-  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  console.log(categories);
 
   useEffect(() => {
     const fetchCategories = async () => {

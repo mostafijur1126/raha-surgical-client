@@ -7,11 +7,11 @@ import { FiChevronDown } from "react-icons/fi";
 import MegaMenu from "./MegaMenu";
 import { authClient } from "@/lib/auth-client";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
-import { CategoryOption } from "@/lib/api/products";
+
 import { SessionUser } from "@/lib/types";
 
 interface NavLinksProps {
-  categories: CategoryOption[];
+  categories: string[];
 }
 
 const NavLinks = ({ categories }: NavLinksProps) => {

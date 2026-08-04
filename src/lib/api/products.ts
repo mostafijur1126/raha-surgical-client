@@ -6,14 +6,14 @@ export interface GetProductsResponse {
   data: Product[];
   message?: string;
 }
-export interface CategoryOption {
-  slug: string;
-  count: number;
-}
+// export interface CategoryOption {
+//   slug: string;
+//   count: number;
+// }
 
 export interface GetCategoriesResponse {
   success: boolean;
-  data: CategoryOption[];
+  data: string[];
   message?: string;
 }
 

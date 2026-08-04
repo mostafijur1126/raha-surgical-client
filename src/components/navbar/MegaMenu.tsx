@@ -3,7 +3,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
-import { CategoryOption } from "@/lib/api/products";
 
 interface MegaMenuProps {
   categories: string[];
