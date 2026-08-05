@@ -1,5 +1,6 @@
 "use server";
 
+import { Order } from "../api/orders";
 import { serverMutation } from "../core/server";
 import { Product } from "../types";
 
@@ -40,6 +41,12 @@ export interface PlaceOrderResponse {
   message?: string;
 }
 
+export interface UpdateStatusResponse {
+  success: boolean;
+  data: Order;
+  message: string;
+}
+
 export const addProduct = async (
   productData: Omit<Product, "_id" | "createdAt" | "updatedAt" | "featured">,
 ) => {
@@ -50,4 +57,16 @@ export const orderProduct = async (
   payload: PlaceOrderPayload,
 ): Promise<PlaceOrderResponse> => {
   return serverMutation("/order-product", payload, "POST");
+};
+
+//update order status
+export const updateOrderStatus = async (
+  orderId: string,
+  status: string,
+): Promise<UpdateStatusResponse> => {
+  return serverMutation(
+    `/ordered-product/${orderId}/status`,
+    { status },
+    "PATCH",
+  );
 };
