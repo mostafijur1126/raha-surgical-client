@@ -1,6 +1,8 @@
-import React from "react";
+import { getOrders } from "@/lib/api/orders";
 
-const OrdersPage = () => {
+const OrdersPage = async () => {
+  const data = await getOrders();
+  console.log(data.data);
   return <div>OrdersPage</div>;
 };
 
