@@ -2,13 +2,9 @@
 
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 import Link from "next/link";
-import { FiDownload, FiPlus } from "react-icons/fi";
+import { FiPlus } from "react-icons/fi";
 
-interface InventoryHeaderProps {
-  onExport: () => void;
-}
-
-const InventoryHeader = ({ onExport }: InventoryHeaderProps) => {
+const InventoryHeader = () => {
   const { isDark } = useMountedTheme();
 
   const primary = isDark ? "#60A5FA" : "#025395";
@@ -32,20 +28,8 @@ const InventoryHeader = ({ onExport }: InventoryHeaderProps) => {
         </p>
       </div>
       <div className="flex items-center gap-3 flex-shrink-0">
-        <button
-          onClick={onExport}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-semibold transition-colors"
-          style={{
-            borderColor: inputBorder,
-            color: textPrimary,
-            backgroundColor: cardBg,
-          }}
-        >
-          <FiDownload className="w-4 h-4" />
-          Export
-        </button>
         <Link
-          href="/admin/products/new"
+          href="/admin/add-products"
           className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors"
           style={{ backgroundColor: primary }}
           onMouseEnter={(e) =>

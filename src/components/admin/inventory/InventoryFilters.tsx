@@ -1,7 +1,7 @@
 "use client";
 
 import { useMountedTheme } from "@/hooks/useMountedTheme";
-import { FiFilter, FiTrash2, FiSliders } from "react-icons/fi";
+import { FiFilter, FiTrash2 } from "react-icons/fi";
 import { toLabel } from "@/lib/format";
 
 interface InventoryFiltersProps {
@@ -118,13 +118,6 @@ const InventoryFilters = ({
           aria-label="Bulk delete"
         >
           <FiTrash2 className="w-4 h-4" />
-        </button>
-        <button
-          className="p-2 rounded-lg border transition-colors"
-          style={{ borderColor: inputBorder, color: textSecondary }}
-          aria-label="More bulk actions"
-        >
-          <FiSliders className="w-4 h-4" />
         </button>
       </div>
     </div>

@@ -5,7 +5,6 @@ import { useMountedTheme } from "@/hooks/useMountedTheme";
 import { getOrders, Order } from "@/lib/api/orders";
 import OrdersSearchBar from "@/components/admin/orders/OrdersSearchBar";
 import OrdersFilterTabs from "@/components/admin/orders/OrdersFilterTabs";
-import ExportButton from "@/components/admin/orders/ExportButton";
 import RevenueCard from "@/components/admin/orders/RevenueCard";
 import OrdersTable from "@/components/admin/orders/OrdersTable";
 import OrdersPagination from "@/components/admin/orders/OrdersPagination";

@@ -24,13 +24,9 @@ export interface PlaceOrderPayload {
   customer: {
     fullName: string;
     phone: string;
-    email: string | null;
     streetAddress: string;
-    district: string;
-    postcode: string | null;
   };
-  orderNotes: string | null;
-  paymentMethod: "online" | "cod";
+  paymentMethod: string;
 }
 
 export interface PlaceOrderResponse {

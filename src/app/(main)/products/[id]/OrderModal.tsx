@@ -109,8 +109,7 @@ export default function OrderModal({
         phone,
         streetAddress,
       },
-      orderNotes: null,
-      paymentMethod: "cod", // only COD
+      paymentMethod: "cod",
     };
 
     await orderProduct(order);

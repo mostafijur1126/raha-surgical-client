@@ -1,10 +1,12 @@
 "use client";
 
 import { useMountedTheme } from "@/hooks/useMountedTheme";
-import { FiEye, FiEdit2, FiTrash2, FiPackage } from "react-icons/fi";
+import { FiEye, FiTrash2, FiPackage } from "react-icons/fi";
 import { toLabel } from "@/lib/format";
 import { getSinglePrice } from "@/lib/productHelpers";
 import type { Product } from "@/lib/types";
+import Link from "next/link";
+import { ProductEditModal } from "./ProductEditModal";
 
 type StockStatus = "In Stock" | "Low Stock" | "Out of Stock";
 
@@ -15,8 +17,6 @@ interface InventoryTableProps {
   statusStyles: Record<StockStatus, { bg: string; text: string }>;
   onToggleSelectAll: () => void;
   onToggleRow: (id: string) => void;
-  onView: (id: string) => void;
-  onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
@@ -27,8 +27,6 @@ const InventoryTable = ({
   statusStyles,
   onToggleSelectAll,
   onToggleRow,
-  onView,
-  onEdit,
   onDelete,
 }: InventoryTableProps) => {
   const { isDark } = useMountedTheme();
@@ -36,7 +34,6 @@ const InventoryTable = ({
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
   const textSecondary = isDark ? "#94A3B8" : "#475569";
   const textMuted = isDark ? "#64748B" : "#64748B";
-  const cardBg = isDark ? "#1E293B" : "#FFFFFF";
   const cardBorder = isDark ? "#334155" : "#E8EEF5";
   const rowHoverBg = isDark ? "#243044" : "#F8FAFC";
   const badgeBg = isDark ? "rgba(96,165,250,0.15)" : "rgba(2,83,149,0.08)";
@@ -217,24 +214,17 @@ const InventoryTable = ({
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-1">
-                    <button
-                      onClick={() => onView(product._id)}
-                      className="p-2 rounded-lg transition-colors"
-                      style={{ color: textSecondary }}
-                      aria-label="View product"
-                      title="View"
-                    >
-                      <FiEye className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => onEdit(product._id)}
-                      className="p-2 rounded-lg transition-colors"
-                      style={{ color: primary }}
-                      aria-label="Edit product"
-                      title="Edit"
-                    >
-                      <FiEdit2 className="w-4 h-4" />
-                    </button>
+                    <Link href={`/products/${product._id}`}>
+                      <button
+                        className="p-2 rounded-lg transition-colors"
+                        style={{ color: textSecondary }}
+                        aria-label="View product"
+                        title="View"
+                      >
+                        <FiEye className="w-4 h-4" />
+                      </button>
+                    </Link>
+                    <ProductEditModal product={product} />
                     <button
                       onClick={() => onDelete(product._id)}
                       className="p-2 rounded-lg transition-colors"

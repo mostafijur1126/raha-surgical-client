@@ -39,8 +39,12 @@ const DashboardSidebar = ({
   const navItems = [
     { label: "Dashboard", href: "/admin/dashboard", icon: FaHome },
     { label: "Orders", href: "/admin/orders", icon: FaShoppingCart },
-    { label: "Products", href: "/admin/products", icon: FaBoxes },
-    { label: "Inventory", href: "/admin/inventory", icon: MdOutlineInventory2 },
+    { label: "Inventory", href: "/admin/inventory", icon: FaBoxes },
+    {
+      label: "Add Products",
+      href: "/admin/add-products",
+      icon: MdOutlineInventory2,
+    },
     { label: "Users", href: "/admin/users", icon: FaUsers },
   ];
 

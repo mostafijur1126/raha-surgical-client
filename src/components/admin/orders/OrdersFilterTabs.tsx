@@ -2,14 +2,18 @@
 
 import { useMountedTheme } from "@/hooks/useMountedTheme";
 
+type OrderCounts = {
+  all: number;
+  pending: number;
+  shipped: number;
+  delivered: number;
+  cancelled: number;
+};
+
 interface OrdersFilterTabsProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  counts?: {
-    all: number;
-    pending: number;
-    shipped: number;
-  };
+  counts: OrderCounts;
 }
 
 const OrdersFilterTabs = ({

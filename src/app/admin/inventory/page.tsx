@@ -1,739 +1,226 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  FiUploadCloud,
-  FiTrash2,
-  FiPlus,
-  FiInfo,
-  FiCheckCircle,
-  FiX,
-  FiLoader,
-  FiAlertCircle,
-} from "react-icons/fi";
-import { uploadImageToCloudinary } from "@/lib/cloudinary";
-import { addProduct } from "@/lib/action/product";
-import toast from "react-hot-toast";
+import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
+import { FiChevronRight as FiBreadcrumbSep } from "react-icons/fi";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
+import { getCategories, getProducts } from "@/lib/api/products";
+import { getSinglePrice } from "@/lib/productHelpers";
+import type { Product } from "@/lib/types";
+import InventoryStats from "@/components/admin/inventory/InventoryStats";
+import InventoryHeader from "@/components/admin/inventory/InventoryHeader";
+import InventoryFilters from "@/components/admin/inventory/InventoryFilters";
+import InventoryTable from "@/components/admin/inventory/InventoryTable";
+import InventoryPagination from "@/components/admin/inventory/InventoryPagination";
 
-interface UploadedImage {
-  id: string;
-  file: File;
-  previewUrl: string; // local blob preview, upload complete howar age ei ta dekhabe
-  cloudinaryUrl: string | null; // upload complete hole eikhane secure_url store hobe
-  status: "uploading" | "done" | "error";
-  errorMessage?: string;
+type StockStatus = "In Stock" | "Low Stock" | "Out of Stock";
+
+const LOW_STOCK_THRESHOLD = 10;
+const STATUSES: StockStatus[] = ["In Stock", "Low Stock", "Out of Stock"];
+const ITEMS_PER_PAGE = 10;
+
+function getStockStatus(stockLevel: number): StockStatus {
+  if (stockLevel <= 0) return "Out of Stock";
+  if (stockLevel <= LOW_STOCK_THRESHOLD) return "Low Stock";
+  return "In Stock";
 }
 
-interface PricingTier {
-  id: string;
-  unitType: string;
-  unitsPerPackage: number;
-  price: string;
-  sku: string;
-}
-
-const createTier = (
-  unitType: string,
-  unitsPerPackage: number,
-  skuBase: string,
-): PricingTier => ({
-  id: crypto.randomUUID(),
-  unitType,
-  unitsPerPackage,
-  price: "",
-  sku: unitsPerPackage === 1 ? skuBase : `${skuBase}-BX${unitsPerPackage}`,
-});
-
-const UNIT_PRESETS = ["Single Piece", "Full Box"];
-
-export default function InventoryPage() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+export default function ProductInventoryPage() {
   const { isDark } = useMountedTheme();
 
-  // Form state
-  const [productName, setProductName] = useState("");
-  const [category, setCategory] = useState("");
-  const [brand, setBrand] = useState("");
-  const [baseSku, setBaseSku] = useState("MPS-00492");
-  const [stockLevel, setStockLevel] = useState(0);
-  const [rxRequired, setRxRequired] = useState(true);
-  const [description, setDescription] = useState("");
-  const [isDragging, setIsDragging] = useState(false);
-  const [images, setImages] = useState<UploadedImage[]>([]);
-  const [tiers, setTiers] = useState<PricingTier[]>([
-    createTier("Single Piece", 1, "MPS-00492"),
-  ]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const clearForm = () => {
-    (setProductName(""),
-      setCategory(""),
-      setBrand(""),
-      setBaseSku("MPS-00492"),
-      setStockLevel(0),
-      setRxRequired(true),
-      setDescription(""),
-      setIsDragging(false),
-      setImages([]),
-      setTiers([createTier("Single Piece", 1, "MPS-00492")]));
-  };
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [categoryFilter, setCategoryFilter] = useState("All Categories");
+  const [statusFilter, setStatusFilter] = useState("All Statuses");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // ---- Theme tokens (matches the rest of the RAHA admin UI) ----
   const primary = isDark ? "#60A5FA" : "#025395";
-  const primaryHover = isDark ? "#3B82F6" : "#01447A";
-  const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
-  const textSecondary = isDark ? "#94A3B8" : "#475569";
   const textMuted = isDark ? "#64748B" : "#64748B";
-  const cardBg = isDark ? "#1E293B" : "#FFFFFF";
-  const pageBg = isDark ? "#0F172A" : "#F5F7FB";
-  const cardBorder = isDark ? "#334155" : "#E8EEF5";
-  const inputBg = isDark ? "#0F172A" : "#FFFFFF";
-  const inputBorder = isDark ? "#334155" : "#E2E8F0";
-  const badgeBg = isDark ? "rgba(96,165,250,0.15)" : "rgba(2,83,149,0.08)";
-  const dropZoneBg = isDark ? "#0F172A" : "#F8FAFC";
-  const dropZoneActiveBg = isDark
-    ? "rgba(96,165,250,0.08)"
-    : "rgba(2,83,149,0.05)";
 
-  const inputStyle = {
-    backgroundColor: inputBg,
-    borderColor: inputBorder,
-    color: textPrimary,
-  };
+  // Fetch data
+  useEffect(() => {
+    const fetchAll = async () => {
+      setIsLoading(true);
+      try {
+        const [productsData, categoriesData] = await Promise.all([
+          getProducts(),
+          getCategories(),
+        ]);
+        setProducts(productsData.data);
+        setCategories(categoriesData.data);
+      } catch (err) {
+        console.error("Failed to load inventory:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAll();
+  }, []);
 
-  const focusHandlers = {
-    onFocus: (
-      e: React.FocusEvent<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      >,
-    ) => {
-      e.currentTarget.style.borderColor = primary;
-      e.currentTarget.style.boxShadow = `0 0 0 2px ${
-        isDark ? "rgba(96,165,250,0.2)" : "rgba(2,83,149,0.15)"
-      }`;
+  // Filtering
+  const filteredRows = useMemo(() => {
+    return products.filter((p) => {
+      if (categoryFilter !== "All Categories" && p.category !== categoryFilter)
+        return false;
+      if (
+        statusFilter !== "All Statuses" &&
+        getStockStatus(p.stockLevel) !== statusFilter
+      )
+        return false;
+      return true;
+    });
+  }, [products, categoryFilter, statusFilter]);
+
+  // Pagination
+  const totalPages = Math.ceil(filteredRows.length / ITEMS_PER_PAGE);
+  const paginatedRows = filteredRows.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
+
+  // Stats
+  const stats = useMemo(() => {
+    const totalProducts = products.length;
+    const lowStockAlerts = products.filter(
+      (p) => getStockStatus(p.stockLevel) === "Low Stock",
+    ).length;
+    const outOfStock = products.filter((p) => p.stockLevel <= 0).length;
+    const totalInventoryValue = products.reduce(
+      (sum, p) => sum + getSinglePrice(p) * p.stockLevel,
+      0,
+    );
+    return { totalProducts, lowStockAlerts, outOfStock, totalInventoryValue };
+  }, [products]);
+
+  // Status styles for table
+  const statusStyles: Record<StockStatus, { bg: string; text: string }> = {
+    "In Stock": {
+      bg: isDark ? "rgba(74,222,128,0.15)" : "#DCFCE7",
+      text: isDark ? "#4ADE80" : "#16A34A",
     },
-    onBlur: (
-      e: React.FocusEvent<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      >,
-    ) => {
-      e.currentTarget.style.borderColor = inputBorder;
-      e.currentTarget.style.boxShadow = "none";
+    "Low Stock": {
+      bg: isDark ? "rgba(251,191,36,0.15)" : "#FEF3C7",
+      text: isDark ? "#FBBF24" : "#B45309",
+    },
+    "Out of Stock": {
+      bg: isDark ? "rgba(248,113,113,0.15)" : "#FEE2E2",
+      text: isDark ? "#F87171" : "#DC2626",
     },
   };
 
-  const addTier = () => {
-    setTiers((prev) => [...prev, createTier("Full Box", 10, baseSku)]);
+  // Handlers
+  const toggleSelectAll = () => {
+    if (selected.size === paginatedRows.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(paginatedRows.map((p) => p._id)));
+    }
   };
 
-  const removeTier = (id: string) => {
-    setTiers((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  const updateTier = (id: string, patch: Partial<PricingTier>) => {
-    setTiers((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
-  };
-
-  // ekta file select/drop hoyar sathe sathe Cloudinary te upload shuru hoye jay
-  const handleNewFiles = (newFiles: File[]) => {
-    const entries: UploadedImage[] = newFiles.map((file) => ({
-      id: crypto.randomUUID(),
-      file,
-      previewUrl: URL.createObjectURL(file),
-      cloudinaryUrl: null,
-      status: "uploading",
-    }));
-
-    setImages((prev) => [...prev, ...entries]);
-
-    entries.forEach((entry) => {
-      uploadImageToCloudinary(entry.file)
-        .then((result) => {
-          setImages((prev) =>
-            prev.map((img) =>
-              img.id === entry.id
-                ? { ...img, status: "done", cloudinaryUrl: result.url }
-                : img,
-            ),
-          );
-        })
-        .catch((err: Error) => {
-          setImages((prev) =>
-            prev.map((img) =>
-              img.id === entry.id
-                ? { ...img, status: "error", errorMessage: err.message }
-                : img,
-            ),
-          );
-        });
+  const toggleRow = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
     });
   };
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-    handleNewFiles(Array.from(e.dataTransfer.files));
-  };
+  const handleDelete = async (id: string) => {
+    try {
+      // await deleteProduct(id);
+      console.log("Delete:", id);
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      handleNewFiles(Array.from(e.target.files));
-      e.target.value = ""; // same file abar select korle change event fire howar jonno
+      // API call করার পর list refresh করো
+      // fetchProducts();
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const removeImage = (id: string) => {
-    setImages((prev) => {
-      const target = prev.find((img) => img.id === id);
-      if (target) URL.revokeObjectURL(target.previewUrl);
-      return prev.filter((img) => img.id !== id);
-    });
+  const handleBulkDelete = () => {
+    console.log("Bulk delete:", Array.from(selected));
+    // Implement actual delete logic
   };
 
-  // Publish/Save korar age check kora hocche shob image upload complete hoyeche kina
-  const isAnyImageUploading = images.some((img) => img.status === "uploading");
-
-  const buildPayload = () => ({
-    productName,
-    category,
-    brand,
-    baseSku,
-    stockLevel,
-    rxRequired,
-    description,
-    pricingTiers: tiers.map(({ id, ...rest }) => rest),
-
-    imageUrls: images
-      .filter((img) => img.status === "done" && img.cloudinaryUrl)
-      .map((img) => img.cloudinaryUrl as string),
-  });
-
-  const handlePublish = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isAnyImageUploading) {
-      console.log("Please wait — images are still uploading to Cloudinary.");
-      return;
-    }
-    const productData = buildPayload();
-    const result = await addProduct(productData);
-
-    if (result.success === true) {
-      toast.success("Product added successfully!");
-      clearForm();
-    }
-  };
-
-  if (!mounted) return null;
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryFilter, statusFilter]);
 
   return (
-    <div
-      className="min-h-screen transition-colors duration-300"
-      style={{ backgroundColor: pageBg }}
-    >
-      <div className="max-w-3xl mx-auto py-10 px-4 sm:px-6">
-        {/* Header */}
-        <div className="mb-6">
-          <h1
-            className="text-2xl md:text-3xl font-bold tracking-tight"
-            style={{ color: textPrimary }}
-          >
-            Inventory Management
-          </h1>
-          <p className="text-sm mt-1" style={{ color: textSecondary }}>
-            Create a new product listing with full technical specifications for
-            clinical procurement.
-          </p>
-        </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Breadcrumb */}
+      <nav
+        className="flex items-center gap-1.5 text-sm mb-3"
+        style={{ color: textMuted }}
+      >
+        <Link href="/admin/dashboard" className="hover:underline">
+          Dashboard
+        </Link>
+        <FiBreadcrumbSep className="w-3.5 h-3.5" />
+        <span className="font-medium" style={{ color: primary }}>
+          Product Management
+        </span>
+      </nav>
 
-        <form onSubmit={handlePublish}>
-          {/* Main card */}
-          <div
-            className="rounded-2xl border shadow-sm p-6 md:p-8 transition-colors duration-300"
-            style={{ backgroundColor: cardBg, borderColor: cardBorder }}
-          >
-            {/* Product Name + Category */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label
-                  className="block text-xs font-semibold uppercase tracking-wider mb-1.5"
-                  style={{ color: textSecondary }}
-                >
-                  Product Name
-                </label>
-                <input
-                  type="text"
-                  value={productName}
-                  onChange={(e) => setProductName(e.target.value)}
-                  placeholder="e.g. PrecisionScalpel Series-X"
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none transition-all duration-200 text-sm"
-                  style={inputStyle}
-                  {...focusHandlers}
-                  required
-                />
-              </div>
-              <div>
-                <label
-                  className="block text-xs font-semibold uppercase tracking-wider mb-1.5"
-                  style={{ color: textSecondary }}
-                >
-                  Category
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none transition-all duration-200 text-sm"
-                  style={inputStyle}
-                  {...focusHandlers}
-                  required
-                >
-                  <option value="">Select surgical specialty</option>
-                  <option value="cutting-instruments">
-                    Cutting Instruments
-                  </option>
-                  <option value="sutures">Sutures &amp; Closure</option>
-                  <option value="orthopedic">Orthopedic</option>
-                  <option value="cardiovascular">Cardiovascular</option>
-                  <option value="general">General Surgery</option>
-                </select>
-              </div>
-            </div>
+      {/* Header */}
+      <InventoryHeader />
 
-            {/* Brand + Base SKU + Stock */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-5">
-              <div>
-                <label
-                  className="block text-xs font-semibold uppercase tracking-wider mb-1.5"
-                  style={{ color: textSecondary }}
-                >
-                  Brand
-                </label>
-                <input
-                  type="text"
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                  placeholder="MedPro / OEM"
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none transition-all duration-200 text-sm"
-                  style={inputStyle}
-                  {...focusHandlers}
-                />
-              </div>
-              <div>
-                <label
-                  className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider mb-1.5"
-                  style={{ color: textSecondary }}
-                >
-                  SKU / Catalog #
-                  <span
-                    className="normal-case font-normal text-[10px] px-1.5 py-0.5 rounded"
-                    style={{ backgroundColor: badgeBg, color: primary }}
-                  >
-                    auto, editable
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  value={baseSku}
-                  onChange={(e) => setBaseSku(e.target.value)}
-                  placeholder="MPS-00492"
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none transition-all duration-200 text-sm font-mono"
-                  style={inputStyle}
-                  {...focusHandlers}
-                />
-              </div>
-              <div>
-                <label
-                  className="block text-xs font-semibold uppercase tracking-wider mb-1.5"
-                  style={{ color: textSecondary }}
-                >
-                  Stock Level (units)
-                </label>
-                <input
-                  type="number"
-                  min={0}
-                  value={stockLevel}
-                  onChange={(e) => setStockLevel(Number(e.target.value))}
-                  className="w-full px-4 py-2.5 rounded-lg border outline-none transition-all duration-200 text-sm"
-                  style={inputStyle}
-                  {...focusHandlers}
-                />
-              </div>
-            </div>
+      {/* Stats */}
+      <InventoryStats
+        totalProducts={stats.totalProducts}
+        lowStockAlerts={stats.lowStockAlerts}
+        outOfStock={stats.outOfStock}
+        totalInventoryValue={stats.totalInventoryValue}
+      />
 
-            {/* Divider */}
-            <div
-              className="my-7 pt-0.5 border-t"
-              style={{ borderColor: cardBorder }}
-            />
+      {/* Filters */}
+      <InventoryFilters
+        categories={categories}
+        categoryFilter={categoryFilter}
+        statusFilter={statusFilter}
+        statusOptions={STATUSES}
+        selectedCount={selected.size}
+        onCategoryChange={setCategoryFilter}
+        onStatusChange={setStatusFilter}
+        onClearFilters={() => {
+          setCategoryFilter("All Categories");
+          setStatusFilter("All Statuses");
+        }}
+        onBulkDelete={handleBulkDelete}
+      />
 
-            {/* Pricing tiers */}
-            <div className="flex items-center justify-between mb-3">
-              <label
-                className="text-xs font-semibold uppercase tracking-wider"
-                style={{ color: textSecondary }}
-              >
-                Pricing by Unit
-              </label>
-              <button
-                type="button"
-                onClick={addTier}
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full transition-colors"
-                style={{ color: primary, backgroundColor: badgeBg }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.color = primaryHover)
-                }
-                onMouseLeave={(e) => (e.currentTarget.style.color = primary)}
-              >
-                <FiPlus className="w-3.5 h-3.5" />
-                Add Tier
-              </button>
-            </div>
+      {/* Table Container */}
+      <div
+        className="rounded-b-xl border border-t-0 overflow-hidden"
+        style={{
+          backgroundColor: isDark ? "#1E293B" : "#FFFFFF",
+          borderColor: isDark ? "#334155" : "#E8EEF5",
+        }}
+      >
+        <InventoryTable
+          products={paginatedRows}
+          selectedIds={selected}
+          isLoading={isLoading}
+          statusStyles={statusStyles}
+          onToggleSelectAll={toggleSelectAll}
+          onToggleRow={toggleRow}
+          onDelete={handleDelete}
+        />
 
-            <div className="space-y-3">
-              <AnimatePresence initial={false}>
-                {tiers.map((tier, idx) => (
-                  <motion.div
-                    key={tier.id}
-                    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                    animate={{ opacity: 1, height: "auto", marginBottom: 0 }}
-                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="overflow-hidden"
-                  >
-                    <div
-                      className="grid grid-cols-1 sm:grid-cols-[1.2fr_0.8fr_1fr_1fr_auto] gap-3 items-end p-4 rounded-xl border"
-                      style={{
-                        borderColor: cardBorder,
-                        backgroundColor: dropZoneBg,
-                      }}
-                    >
-                      <div>
-                        <label
-                          className="block text-[10px] font-semibold uppercase tracking-wider mb-1"
-                          style={{ color: textMuted }}
-                        >
-                          Unit Type
-                        </label>
-                        <input
-                          list={`unit-presets-${tier.id}`}
-                          value={tier.unitType}
-                          onChange={(e) =>
-                            updateTier(tier.id, { unitType: e.target.value })
-                          }
-                          className="w-full px-3 py-2 rounded-lg border outline-none text-sm"
-                          style={inputStyle}
-                          {...focusHandlers}
-                        />
-                        <datalist id={`unit-presets-${tier.id}`}>
-                          {UNIT_PRESETS.map((preset) => (
-                            <option key={preset} value={preset} />
-                          ))}
-                        </datalist>
-                      </div>
-
-                      <div>
-                        <label
-                          className="block text-[10px] font-semibold uppercase tracking-wider mb-1"
-                          style={{ color: textMuted }}
-                        >
-                          Units / Package
-                        </label>
-                        <input
-                          type="number"
-                          min={1}
-                          value={tier.unitsPerPackage}
-                          onChange={(e) =>
-                            updateTier(tier.id, {
-                              unitsPerPackage: Number(e.target.value),
-                            })
-                          }
-                          className="w-full px-3 py-2 rounded-lg border outline-none text-sm"
-                          style={inputStyle}
-                          {...focusHandlers}
-                        />
-                      </div>
-
-                      <div>
-                        <label
-                          className="block text-[10px] font-semibold uppercase tracking-wider mb-1"
-                          style={{ color: textMuted }}
-                        >
-                          Price (BDT)
-                        </label>
-                        <div className="relative">
-                          <span
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-sm"
-                            style={{ color: textMuted }}
-                          >
-                            ৳
-                          </span>
-                          <input
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            value={tier.price}
-                            onChange={(e) =>
-                              updateTier(tier.id, { price: e.target.value })
-                            }
-                            placeholder="0.00"
-                            className="w-full pl-6 pr-3 py-2 rounded-lg border outline-none text-sm"
-                            style={inputStyle}
-                            {...focusHandlers}
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label
-                          className="block text-[10px] font-semibold uppercase tracking-wider mb-1"
-                          style={{ color: textMuted }}
-                        >
-                          Tier SKU
-                        </label>
-                        <input
-                          type="text"
-                          value={tier.sku}
-                          onChange={(e) =>
-                            updateTier(tier.id, { sku: e.target.value })
-                          }
-                          className="w-full px-3 py-2 rounded-lg border outline-none text-sm font-mono"
-                          style={inputStyle}
-                          {...focusHandlers}
-                        />
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => removeTier(tier.id)}
-                        disabled={tiers.length === 1}
-                        className="flex items-center justify-center h-[38px] w-[38px] rounded-lg border transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-                        style={{
-                          borderColor: cardBorder,
-                          color: isDark ? "#F87171" : "#DC2626",
-                        }}
-                        aria-label="Remove tier"
-                      >
-                        <FiTrash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-
-            {/* Rx toggle */}
-            <button
-              type="button"
-              onClick={() => setRxRequired((v) => !v)}
-              className="w-full flex items-center gap-2 mt-4 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-              style={{
-                backgroundColor: rxRequired ? badgeBg : "transparent",
-                color: rxRequired ? primary : textMuted,
-                border: `1px solid ${rxRequired ? "transparent" : inputBorder}`,
-              }}
-            >
-              <FiInfo className="w-4 h-4 flex-shrink-0" />
-              Rx Prescription Required for purchase
-            </button>
-
-            {/* Divider */}
-            <div
-              className="my-7 border-t"
-              style={{ borderColor: cardBorder }}
-            />
-
-            {/* Product Imagery */}
-            <div>
-              <label
-                className="block text-xs font-semibold uppercase tracking-wider mb-2"
-                style={{ color: textSecondary }}
-              >
-                Product Imagery
-              </label>
-              <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  setIsDragging(true);
-                }}
-                onDragLeave={() => setIsDragging(false)}
-                onDrop={handleDrop}
-                className="relative rounded-xl border-2 border-dashed flex flex-col items-center justify-center text-center px-6 py-10 transition-colors duration-150"
-                style={{
-                  borderColor: isDragging ? primary : inputBorder,
-                  backgroundColor: isDragging ? dropZoneActiveBg : dropZoneBg,
-                }}
-              >
-                <input
-                  type="file"
-                  multiple
-                  accept=".png,.jpg,.jpeg,.pdf"
-                  onChange={handleFileInput}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                />
-                <div
-                  className="w-11 h-11 rounded-full flex items-center justify-center mb-3"
-                  style={{ backgroundColor: badgeBg }}
-                >
-                  <FiUploadCloud
-                    className="w-5 h-5"
-                    style={{ color: primary }}
-                  />
-                </div>
-                <p
-                  className="text-sm font-semibold"
-                  style={{ color: textPrimary }}
-                >
-                  Drag and drop clinical photos
-                </p>
-                <p
-                  className="text-xs mt-1 max-w-xs"
-                  style={{ color: textMuted }}
-                >
-                  Support for high-resolution PNG, JPG, or PDF specification
-                  sheets. Max size 20MB per file.
-                </p>
-              </div>
-
-              {images.length > 0 && (
-                <ul className="mt-3 space-y-2">
-                  <AnimatePresence initial={false}>
-                    {images.map((img) => (
-                      <motion.li
-                        key={img.id}
-                        initial={{ opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="flex items-center gap-3 px-3 py-2 rounded-lg border text-sm"
-                        style={{
-                          borderColor: cardBorder,
-                          color: textSecondary,
-                        }}
-                      >
-                        {/* eta local blob preview - Cloudinary theke asa URL na, dekhanor jonno matro */}
-                        <img
-                          src={img.previewUrl}
-                          alt={img.file.name}
-                          className="w-9 h-9 rounded object-cover flex-shrink-0"
-                        />
-                        <span className="truncate flex-1">{img.file.name}</span>
-
-                        {img.status === "uploading" && (
-                          <span
-                            className="flex items-center gap-1.5 text-xs flex-shrink-0"
-                            style={{ color: primary }}
-                          >
-                            <FiLoader className="w-3.5 h-3.5 animate-spin" />
-                            Uploading...
-                          </span>
-                        )}
-                        {img.status === "done" && (
-                          <span
-                            className="flex items-center gap-1.5 text-xs flex-shrink-0"
-                            style={{ color: isDark ? "#4ADE80" : "#16A34A" }}
-                          >
-                            <FiCheckCircle className="w-3.5 h-3.5" />
-                            Uploaded
-                          </span>
-                        )}
-                        {img.status === "error" && (
-                          <span
-                            className="flex items-center gap-1.5 text-xs flex-shrink-0"
-                            style={{ color: isDark ? "#F87171" : "#DC2626" }}
-                            title={img.errorMessage}
-                          >
-                            <FiAlertCircle className="w-3.5 h-3.5" />
-                            Failed
-                          </span>
-                        )}
-
-                        <button
-                          type="button"
-                          onClick={() => removeImage(img.id)}
-                          style={{ color: textMuted }}
-                          aria-label="Remove file"
-                          className="flex-shrink-0"
-                        >
-                          <FiX className="w-4 h-4" />
-                        </button>
-                      </motion.li>
-                    ))}
-                  </AnimatePresence>
-                </ul>
-              )}
-            </div>
-
-            {/* Description */}
-            <div className="mt-7">
-              <label
-                className="block text-xs font-semibold uppercase tracking-wider mb-1.5"
-                style={{ color: textSecondary }}
-              >
-                Clinical Description &amp; Specifications
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={5}
-                placeholder="Provide detailed material information, sterilization requirements, and anatomical compatibility..."
-                className="w-full px-4 py-3 rounded-lg border outline-none transition-all duration-200 text-sm resize-y"
-                style={inputStyle}
-                {...focusHandlers}
-              />
-            </div>
-
-            {/* Divider */}
-            <div
-              className="my-7 border-t"
-              style={{ borderColor: cardBorder }}
-            />
-
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-3 w-full sm:w-auto">
-                <motion.button
-                  whileTap={{ scale: 0.97 }}
-                  type="submit"
-                  disabled={isAnyImageUploading}
-                  className="flex-1 sm:flex-none px-6 py-2.5 rounded-lg text-sm font-semibold text-white shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                  style={{ backgroundColor: primary }}
-                  onMouseEnter={(e) => {
-                    if (!isAnyImageUploading)
-                      e.currentTarget.style.backgroundColor = primaryHover;
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isAnyImageUploading)
-                      e.currentTarget.style.backgroundColor = primary;
-                  }}
-                >
-                  {isAnyImageUploading
-                    ? "Uploading images..."
-                    : "Publish Product"}
-                </motion.button>
-              </div>
-            </div>
-          </div>
-        </form>
-
-        {/* Clinical accuracy note */}
-        <div
-          className="mt-6 rounded-2xl border p-5 flex items-start gap-3"
-          style={{ backgroundColor: cardBg, borderColor: cardBorder }}
-        >
-          <FiCheckCircle
-            className="w-5 h-5 flex-shrink-0 mt-0.5"
-            style={{ color: primary }}
+        {/* Pagination */}
+        {!isLoading && filteredRows.length > 0 && (
+          <InventoryPagination
+            currentPage={currentPage}
+            totalItems={filteredRows.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
           />
-          <div>
-            <h3 className="text-sm font-semibold" style={{ color: primary }}>
-              Clinical Accuracy Guarantee
-            </h3>
-            <p className="text-xs mt-1" style={{ color: textSecondary }}>
-              All newly published products undergo a secondary regulatory review
-              before appearing in the public catalog.
-            </p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
