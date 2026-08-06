@@ -45,7 +45,7 @@ const DashboardSidebar = ({
       href: "/admin/add-products",
       icon: MdOutlineInventory2,
     },
-    { label: "Users", href: "/admin/users", icon: FaUsers },
+    // { label: "Users", href: "/admin/users", icon: FaUsers },
   ];
 
   // Sidebar content shared between desktop and mobile

@@ -43,10 +43,30 @@ export interface UpdateStatusResponse {
   message: string;
 }
 
+export type UpdateProductPayload = Partial<
+  Omit<Product, "_id" | "createdAt" | "updatedAt">
+>;
+export interface UpdateProductResponse {
+  success: boolean;
+  data?: {
+    acknowledged: boolean;
+    matchedCount: number;
+    modifiedCount: number;
+  };
+  message?: string;
+}
+
 export const addProduct = async (
   productData: Omit<Product, "_id" | "createdAt" | "updatedAt" | "featured">,
 ) => {
   return serverMutation("/add-product", productData);
+};
+
+export const updateProduct = async (
+  id: string,
+  data: UpdateProductPayload,
+): Promise<UpdateProductResponse> => {
+  return serverMutation(`/update-product/${id}`, data, "PATCH");
 };
 
 export const orderProduct = async (

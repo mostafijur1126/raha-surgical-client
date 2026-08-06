@@ -18,6 +18,7 @@ interface InventoryTableProps {
   onToggleSelectAll: () => void;
   onToggleRow: (id: string) => void;
   onDelete: (id: string) => void;
+  onProductUpdated: () => void;
 }
 
 const InventoryTable = ({
@@ -28,6 +29,7 @@ const InventoryTable = ({
   onToggleSelectAll,
   onToggleRow,
   onDelete,
+  onProductUpdated,
 }: InventoryTableProps) => {
   const { isDark } = useMountedTheme();
 
@@ -224,7 +226,10 @@ const InventoryTable = ({
                         <FiEye className="w-4 h-4" />
                       </button>
                     </Link>
-                    <ProductEditModal product={product} />
+                    <ProductEditModal
+                      product={product}
+                      onUpdated={onProductUpdated}
+                    />
                     <button
                       onClick={() => onDelete(product._id)}
                       className="p-2 rounded-lg transition-colors"

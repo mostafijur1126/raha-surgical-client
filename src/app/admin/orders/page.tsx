@@ -143,7 +143,7 @@ export default function OrdersPage() {
   // };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-6 py-6">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold" style={{ color: textPrimary }}>

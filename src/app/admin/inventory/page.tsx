@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { FiChevronRight as FiBreadcrumbSep } from "react-icons/fi";
 import { useMountedTheme } from "@/hooks/useMountedTheme";
@@ -29,7 +29,8 @@ export default function ProductInventoryPage() {
   const { isDark } = useMountedTheme();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  // ✅ CategoryOption[] — আগে string[] লেখা ছিল, কিন্তু আসলে {slug, count} ডেটা রাখা হয়
+  const [categories, setCategories] = useState<CategoryOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -40,25 +41,41 @@ export default function ProductInventoryPage() {
   const primary = isDark ? "#60A5FA" : "#025395";
   const textMuted = isDark ? "#64748B" : "#64748B";
 
-  // Fetch data
-  useEffect(() => {
-    const fetchAll = async () => {
-      setIsLoading(true);
-      try {
-        const [productsData, categoriesData] = await Promise.all([
-          getProducts(),
-          getCategories(),
-        ]);
-        setProducts(productsData.data);
-        setCategories(categoriesData.data);
-      } catch (err) {
-        console.error("Failed to load inventory:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchAll();
+  // ---- Fetch data ----
+  const normalizeToArray = <T,>(input: unknown): T[] => {
+    if (Array.isArray(input)) return input as T[];
+    if (
+      input &&
+      typeof input === "object" &&
+      Array.isArray((input as any).data)
+    ) {
+      return (input as any).data as T[];
+    }
+    return [];
+  };
+
+  const fetchInventory = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const [productsData, categoriesData] = await Promise.all([
+        getProducts(),
+        getCategories(),
+      ]);
+      setProducts(normalizeToArray<Product>(productsData));
+      setCategories(normalizeToArray<CategoryOption>(categoriesData));
+    } catch (err) {
+      console.error("Failed to load inventory:", err);
+      setProducts([]);
+      setCategories([]);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
+
+  // ✅ এটাই মিসিং ছিল — mount হওয়ার সময় আসল fetch শুরু হচ্ছে এখানে
+  useEffect(() => {
+    fetchInventory();
+  }, [fetchInventory]);
 
   // Filtering
   const filteredRows = useMemo(() => {
@@ -134,7 +151,7 @@ export default function ProductInventoryPage() {
       console.log("Delete:", id);
 
       // API call করার পর list refresh করো
-      // fetchProducts();
+      // fetchInventory();
     } catch (err) {
       console.error(err);
     }
@@ -209,6 +226,7 @@ export default function ProductInventoryPage() {
           onToggleSelectAll={toggleSelectAll}
           onToggleRow={toggleRow}
           onDelete={handleDelete}
+          onProductUpdated={fetchInventory}
         />
 
         {/* Pagination */}
