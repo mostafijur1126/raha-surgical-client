@@ -27,7 +27,7 @@ const CategorySection = () => {
     fetchCategories();
   }, []);
 
-  const sectionBg = isDark ? "#0F172A" : "#faf9ff";
+  const sectionBg = isDark ? "#0F172A" : "#f0f2ff";
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
   const textSecondary = isDark ? "#94A3B8" : "#475569";
   const cardBg = isDark ? "#1E293B" : "#FFFFFF";
@@ -52,7 +52,7 @@ const CategorySection = () => {
 
   return (
     <section
-      className="py-16 md:py-20 transition-colors duration-300"
+      className="py-10 md:py-20 transition-colors duration-300"
       style={{ backgroundColor: sectionBg }}
     >
       <div className="container mx-auto px-4">

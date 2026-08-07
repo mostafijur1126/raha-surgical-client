@@ -45,23 +45,23 @@ const FeaturedProducts = () => {
 
   // Theme-aware colors
   const sectionBg = isDark ? "#0F172A" : "#faf9ff";
-  const headingColor = isDark ? "#F1F5F9" : "#0F172A";
   const subTextColor = isDark ? "#94A3B8" : "#475569";
   const primaryColor = isDark ? "#60A5FA" : "#025395";
+  const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
   const primaryHover = isDark ? "#3B82F6" : "#01447A";
   const buttonText = "#FFFFFF";
 
   return (
     <section
-      className="py-16 md:py-20 transition-colors duration-300"
+      className="py-10 md:py-20 transition-colors duration-300"
       style={{ backgroundColor: sectionBg }}
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
           <h2
-            className="text-3xl sm:text-4xl font-bold mb-3"
-            style={{ color: headingColor }}
+            className="text-2xl md:text-3xl font-bold text-center"
+            style={{ color: textPrimary }}
           >
             Featured Instruments
           </h2>

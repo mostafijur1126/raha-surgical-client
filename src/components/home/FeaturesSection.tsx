@@ -44,6 +44,7 @@ const FeaturesSection = () => {
   const cardTitle = isDark ? "#F1F5F9" : "#0F172A";
   const cardDesc = isDark ? "#94A3B8" : "#475569";
   const decorativeLine = isDark ? "rgba(96,165,250,0.3)" : "rgba(2,83,149,0.3)";
+  const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
   const glowBg = isDark
     ? "from-blue-600/10 to-transparent"
     : "from-blue-600/5 to-transparent";
@@ -57,8 +58,8 @@ const FeaturesSection = () => {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2
-            className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4"
-            style={{ color: headingColor }}
+            className="text-2xl md:text-3xl font-bold text-center"
+            style={{ color: textPrimary }}
           >
             Why Surgical Professionals <br className="hidden sm:block" />
             Choose <span style={{ color: iconColor }}>RAHA Surgical</span>
@@ -73,7 +74,7 @@ const FeaturesSection = () => {
         </div>
 
         {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 justify-items-center">
           {features.map((feature) => {
             const Icon = feature.icon;
             return (
@@ -100,10 +101,10 @@ const FeaturesSection = () => {
                   className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${glowBg} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}
                 />
 
-                <div className="relative z-10">
+                <div className="relative z-10 text-center">
                   {/* Icon */}
                   <div
-                    className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5 transition-all duration-300 group-hover:scale-105"
+                    className="inline-flex items-center justify-center w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl mb-3 sm:mb-5 transition-all duration-300 group-hover:scale-105"
                     style={{
                       backgroundColor: iconBg,
                       color: iconColor,
@@ -115,12 +116,12 @@ const FeaturesSection = () => {
                       e.currentTarget.style.backgroundColor = iconBg;
                     }}
                   >
-                    <Icon className="w-7 h-7" />
+                    <Icon className="w-5 h-5 sm:w-7 sm:h-7" />
                   </div>
 
                   {/* Title */}
                   <h3
-                    className="text-xl font-bold mb-3 tracking-tight"
+                    className="text-sm sm:text-xl font-bold mb-2 sm:mb-3 tracking-tight"
                     style={{ color: cardTitle }}
                   >
                     {feature.title}
@@ -128,7 +129,7 @@ const FeaturesSection = () => {
 
                   {/* Description */}
                   <p
-                    className="leading-relaxed text-sm md:text-base"
+                    className="text-xs sm:text-sm md:text-base leading-relaxed"
                     style={{ color: cardDesc }}
                   >
                     {feature.description}
