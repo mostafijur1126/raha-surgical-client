@@ -29,8 +29,7 @@ export default function ProductInventoryPage() {
   const { isDark } = useMountedTheme();
 
   const [products, setProducts] = useState<Product[]>([]);
-  // ✅ CategoryOption[] — আগে string[] লেখা ছিল, কিন্তু আসলে {slug, count} ডেটা রাখা হয়
-  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -44,12 +43,12 @@ export default function ProductInventoryPage() {
   // ---- Fetch data ----
   const normalizeToArray = <T,>(input: unknown): T[] => {
     if (Array.isArray(input)) return input as T[];
-    if (
-      input &&
-      typeof input === "object" &&
-      Array.isArray((input as any).data)
-    ) {
-      return (input as any).data as T[];
+    if (input && typeof input === "object" && "data" in input) {
+      const data = input.data;
+
+      if (Array.isArray(data)) {
+        return data as T[];
+      }
     }
     return [];
   };
@@ -62,7 +61,7 @@ export default function ProductInventoryPage() {
         getCategories(),
       ]);
       setProducts(normalizeToArray<Product>(productsData));
-      setCategories(normalizeToArray<CategoryOption>(categoriesData));
+      setCategories(normalizeToArray<string>(categoriesData));
     } catch (err) {
       console.error("Failed to load inventory:", err);
       setProducts([]);
@@ -72,7 +71,6 @@ export default function ProductInventoryPage() {
     }
   }, []);
 
-  // ✅ এটাই মিসিং ছিল — mount হওয়ার সময় আসল fetch শুরু হচ্ছে এখানে
   useEffect(() => {
     fetchInventory();
   }, [fetchInventory]);
