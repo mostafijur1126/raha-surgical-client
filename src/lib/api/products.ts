@@ -23,6 +23,12 @@ export interface GetProductByIdResponse {
   message?: string;
 }
 
+export interface PopularCategory {
+  category: string;
+  imageUrl: string | null;
+  productCount: number;
+}
+
 export const getProducts = (
   category?: string | null,
 ): Promise<GetProductsResponse> => {
@@ -38,6 +44,13 @@ export const getProductById = (id: string): Promise<GetProductByIdResponse> => {
 
 export const getCategories = (): Promise<GetCategoriesResponse> => {
   return serverFetch("/categories");
+};
+
+export const getPopularCategories = (): Promise<{
+  success: boolean;
+  data: PopularCategory[];
+}> => {
+  return serverFetch("/api/categories/popular");
 };
 
 export const getFeaturedProducts = (): Promise<GetProductsResponse> => {

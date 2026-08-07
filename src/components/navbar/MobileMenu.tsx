@@ -67,16 +67,14 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
             onClick={onClose}
           />
 
-          {/* Drawer - এখন বাম দিক থেকে স্লাইড হবে */}
           <motion.div
-            initial={{ x: "-100%" }} // বাম থেকে শুরু
-            animate={{ x: 0 }} // পূর্ণ দৃশ্যমান
-            exit={{ x: "-100%" }} // বামে চলে যাবে
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
             transition={{ type: "tween", duration: 0.3, ease: "easeInOut" }}
             className="fixed top-0 left-0 w-full max-w-sm h-full z-50 shadow-xl p-6 overflow-y-auto"
             style={{ backgroundColor: bg }}
           >
-            {/* ক্লোজ বাটন – ডান দিকে থাকবে */}
             <div className="flex justify-end">
               <button
                 onClick={onClose}
@@ -94,7 +92,6 @@ const MobileMenu = ({ isOpen, onClose, categories }: MobileMenuProps) => {
               </button>
             </div>
 
-            {/* মেনু আইটেম */}
             <div className="mt-4 space-y-2">
               {links.map((link) => {
                 const isActive = pathname === link.href;
