@@ -34,17 +34,17 @@ const Footer = () => {
   };
 
   const productLinks = [
-    { label: "General Surgery", href: "/products/general-surgery" },
-    { label: "Neurosurgery", href: "/products/neurosurgery" },
-    { label: "Orthopedics", href: "/products/orthopedics" },
-    { label: "Sterilization Trays", href: "/products/sterilization-trays" },
+    { label: "General Surgery", href: "#" },
+    { label: "Neurosurgery", href: "#" },
+    { label: "Orthopedics", href: "#" },
+    { label: "Sterilization Trays", href: "#" },
   ];
 
   const companyLinks = [
-    { label: "Terms of Service", href: "/terms" },
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Regulatory Compliance", href: "/compliance" },
-    { label: "Support", href: "/support" },
+    { label: "Terms of Service", href: "#" },
+    { label: "Privacy Policy", href: "#" },
+    { label: "Regulatory Compliance", href: "#" },
+    { label: "Support", href: "#" },
   ];
 
   const socialLinks = [
