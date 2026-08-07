@@ -35,7 +35,7 @@ export interface GetOrdersResponse {
     currentPage: number;
     limit: number;
   };
-  message: string;
+  message?: string;
 }
 
 export const getOrders = async (params?: {

@@ -50,8 +50,15 @@ export default function OrdersPage() {
       });
 
       if (response.success) {
-        setOrders(response.data);
-        setPagination(response.pagination);
+        setOrders(response.data ?? []);
+        setPagination(
+          response.pagination ?? {
+            total: 0,
+            totalPages: 1,
+            currentPage: 1,
+            limit: ITEMS_PER_PAGE,
+          },
+        );
 
         // Calculate total revenue from all orders (not just current page)
         // For simplicity, we'll fetch all orders for revenue and counts
