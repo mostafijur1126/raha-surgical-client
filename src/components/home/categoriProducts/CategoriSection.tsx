@@ -27,6 +27,7 @@ const CategorySection = () => {
     fetchCategories();
   }, []);
 
+  const sectionBg = isDark ? "#0F172A" : "#faf9ff";
   const textPrimary = isDark ? "#F1F5F9" : "#0F172A";
   const textSecondary = isDark ? "#94A3B8" : "#475569";
   const cardBg = isDark ? "#1E293B" : "#FFFFFF";
@@ -50,7 +51,10 @@ const CategorySection = () => {
   }
 
   return (
-    <section className="py-12">
+    <section
+      className="py-16 md:py-20 transition-colors duration-300"
+      style={{ backgroundColor: sectionBg }}
+    >
       <div className="container mx-auto px-4">
         <h2
           className="text-2xl md:text-3xl font-bold text-center mb-8"
@@ -59,7 +63,7 @@ const CategorySection = () => {
           Popular Categories
         </h2>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {categories.map((cat) => (
             <Link
               key={cat.category}
@@ -87,12 +91,12 @@ const CategorySection = () => {
                     No Image
                   </div>
                 )}
-                {/* ক্যাটাগরি নামের ওভারলে (অপশনাল) */}
+
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
               <div className="p-3 text-center">
                 <p
-                  className="text-sm font-medium truncate"
+                  className="text-sm font-medium truncate capitalize"
                   style={{ color: textPrimary }}
                 >
                   {cat.category.replace(/-/g, " ")}
